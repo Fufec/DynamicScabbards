@@ -1,0 +1,6 @@
+*.w3strings binary
+*.xml       binary
+*.w3strings -text
+*.xml       -text
+*.sh  text eol=lf
+*.yml text eol=lf
