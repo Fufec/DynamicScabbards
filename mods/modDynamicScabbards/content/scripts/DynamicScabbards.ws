@@ -224,6 +224,11 @@ class DynamicScabbards
         if (CheckSingleSet(armor, gloves, pants, boots, "EP1 Witcher"))   { school = DS_Set_Viper;          return true;}
         if (CheckSingleSet(armor, gloves, pants, boots, "Netflix"))       { school = DS_Set_ForgottenWolf;  return true;}
 
+        // Support for Witcher School Set Rework and Balance mod
+        if (CheckSingleSet(armor, gloves, pants, boots, "Kaer Morhen"))   { school = DS_Set_KaerMorhen;     return true;}
+        if (CheckSingleSet(armor, gloves, pants, boots, "Viper"))         { school = DS_Set_Viper;          return true;}
+        if (CheckSingleSet(armor, gloves, pants, boots, "Manticore"))     { school = DS_Set_Manticore;      return true;}
+
         return false;
     }
 
@@ -312,6 +317,22 @@ class DynamicScabbards
         }
     }
 
+    public function IsSwordOrArmorSlot(slot : EEquipmentSlots) : bool
+    {
+        switch (slot)
+        {
+            case EES_SteelSword:
+            case EES_SilverSword:
+            case EES_Armor:
+            case EES_Boots:
+            case EES_Pants:
+            case EES_Gloves:
+                return true;
+        }
+
+        return false;
+    }
+
     public function ClearTemplateCacheAfterLoad()
     {
         current_steel_template = NULL;
@@ -367,12 +388,7 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
        thePlayer.InitDS();
     }
 
-    if (slot == EES_SteelSword  ||
-        slot == EES_SilverSword ||
-        slot == EES_Armor       ||
-        slot == EES_Boots       ||
-        slot == EES_Pants       ||
-        slot == EES_Gloves)
+    if (thePlayer.ds.IsSwordOrArmorSlot(slot))
     {
         thePlayer.ds.SetScabbards(slot);
     }
@@ -392,12 +408,7 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
        thePlayer.InitDS();
     }
 
-    if (slot == EES_SteelSword  ||
-        slot == EES_SilverSword ||
-        slot == EES_Armor       ||
-        slot == EES_Boots       ||
-        slot == EES_Pants       ||
-        slot == EES_Gloves)
+    if (thePlayer.ds.IsSwordOrArmorSlot(slot))
     {
         thePlayer.ds.SetScabbards(slot);
     }

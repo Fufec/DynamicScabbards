@@ -1,7 +1,7 @@
 # Basic information about this project
 [content]
 name = "modDynamicScabbards"
-description = "Replace your default scabbards with witcher ones when wearing a witcher armor!"
+description = "Match your swords of any quality with your witcher armor."
 version = "1.0.0"
 authors = ["Fufec"]
 game_version = "4.04"
