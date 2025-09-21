@@ -33,6 +33,10 @@ class DynamicScabbards
             case 'Knights steel sword 3':
             case 'Olgierd Sabre':
             case 'Steel Vixen':
+            case 'Karabela':
+            case 'Netflix steel sword':
+            case 'Netflix steel sword 1':
+            case 'Netflix steel sword 2':
                 return true;
         }
 
@@ -47,6 +51,9 @@ class DynamicScabbards
         switch (current)
         {
             case 'Silver Vixen':
+            case 'Netflix silver sword':
+            case 'Netflix silver sword 1':
+            case 'Netflix silver sword 2':
                 return true;
         }
 
