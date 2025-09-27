@@ -34,6 +34,7 @@ class DynamicScabbards
             case 'Olgierd Sabre':
             case 'Steel Vixen':
             case 'Karabela':
+            case 'Dyaebl':
             case 'Netflix steel sword':
             case 'Netflix steel sword 1':
             case 'Netflix steel sword 2':
@@ -231,7 +232,7 @@ class DynamicScabbards
         if (CheckSingleSet(armor, gloves, pants, boots, "EP1 Witcher"))   { school = DS_Set_Viper;          return true;}
         if (CheckSingleSet(armor, gloves, pants, boots, "Netflix"))       { school = DS_Set_ForgottenWolf;  return true;}
 
-        // Support for Witcher School Set Rework and Balance mod
+        // Built-in compatibility for Witcher School Set Rework and Balance mod
         if (CheckSingleSet(armor, gloves, pants, boots, "Kaer Morhen"))   { school = DS_Set_KaerMorhen;     return true;}
         if (CheckSingleSet(armor, gloves, pants, boots, "Viper"))         { school = DS_Set_Viper;          return true;}
         if (CheckSingleSet(armor, gloves, pants, boots, "Manticore"))     { school = DS_Set_Manticore;      return true;}
