@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<UserConfig>
+	<Group id="DSOptions" displayName="Mods.DS_settings">
+		<VisibleVars>
+            <Var id="DSVersion" displayName="ds_version" displayType="SLIDER;0;50;50000"  visibilityCondition="hideAlways"/>
+			<Var id="DSEnabled" displayName="ds_enabled" displayType="TOGGLE" />
+			<Var id="Separator" displayName=""           displayType="SUBTLE_SEPARATOR"/>
+            <Var id="DSModeChestplate" displayName="ds_mode_chestplate" displayType="TOGGLE" />
+		</VisibleVars>
+	</Group>
+</UserConfig>

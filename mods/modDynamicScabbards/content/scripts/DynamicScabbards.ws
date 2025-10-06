@@ -12,9 +12,44 @@ enum DSSchoolSet
 
 class DynamicScabbards
 {
+    var enabled : bool; // mod enabled
+    var chestplate_mode : bool; // if true, only chestplate armor piece will be required for the swap to occur
+
+    var update_pending : bool; // true if a sword or an armor has been changed/unequipped
+    default update_pending = false;
+
     // used as cache for holding the current values for unloading the templates when the player no longer has full set
     var current_steel_template : CEntityTemplate;
     var current_silver_template : CEntityTemplate;
+
+    // timer delay for hiding/showing vanilla scabbards to ensure entity is loaded
+    var scabbard_hide_delay : float;
+    default scabbard_hide_delay = 0.01;
+
+    public function SetEnabled(value : bool) 
+    { 
+        enabled = value; 
+    }
+
+    public function SetChestplateMode(value : bool) 
+    { 
+        chestplate_mode = value; 
+    }
+
+    public function SetPendingUpdate(value: bool)
+    {
+        update_pending = value;
+    }
+
+    public function IsEnabled() : bool 
+    { 
+        return enabled; 
+    }
+
+    public function IsPendingUpdate() : bool
+    {
+        return update_pending;
+    }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
     function IsSteelException(weapon: SItemUniqueId) : bool
@@ -28,8 +63,17 @@ class DynamicScabbards
             case 'Princessxenthiasword_crafted':
             case 'Robustswordofdolblathanna':
             case 'Robustswordofdolblathanna_crafted':
+            case 'Scoiatael sword 1':
+            case 'Scoiatael sword 1_crafted':
+            case 'Scoiatael sword 2':
+            case 'Scoiatael sword 2_crafted':
+            case 'Scoiatael sword 4':
+            case 'mq7007 Elven Sword':
             case 'Ofir Sabre 1':
+            case 'Ofir Sabre 2':
+            case 'Hakland Sabre':
             case 'Crafted Ofir Steel Sword':
+            case 'Wild Hunt sword 1':
             case 'Knights steel sword 3':
             case 'Olgierd Sabre':
             case 'Steel Vixen':
@@ -61,7 +105,7 @@ class DynamicScabbards
         return false;
     }
 
-    function IncludeNewScabbardTemplate(scabbard : CEntityTemplate)
+    function IncludeScabbardTemplate(scabbard : CEntityTemplate)
     {
         var component : CComponent;
         component = thePlayer.GetComponentByClassName('CAppearanceComponent');
@@ -69,7 +113,7 @@ class DynamicScabbards
         ((CAppearanceComponent)component).IncludeAppearanceTemplate(scabbard);	
     }
 
-    function ExcludeOldScabbardTemplate(scabbard : CEntityTemplate)
+    function ExcludeScabbardTemplate(scabbard : CEntityTemplate)
     {
         var component : CComponent;
         component = thePlayer.GetComponentByClassName('CAppearanceComponent');
@@ -94,7 +138,7 @@ class DynamicScabbards
             case DS_Set_Wolf:              return "dlc\dlc10\data\items\weapons\swords\witcher_silver_swords\witcher_silver_wolf_scabbard.w2ent";
             case DS_Set_Viper:             return "items\bodyparts\geralt_items\scabbards\silver_scabbards\scabbard_silver_1_05.w2ent";
             case DS_Set_ForgottenWolf:     return "items\weapons\swords\witcher_silver_scabbards\witcher_silver_netflix_scabbard.w2ent";
-            default:                        return "";
+            default:                       return "";
         }
     }
 
@@ -110,12 +154,18 @@ class DynamicScabbards
             case DS_Set_Wolf:              return "dlc\dlc10\data\items\weapons\swords\witcher_steel_swords\witcher_steel_wolf_scabbard.w2ent";
             case DS_Set_Viper:             return "items\bodyparts\geralt_items\scabbards\steel_scabbards\scabbard_steel_1_02.w2ent";
             case DS_Set_ForgottenWolf:     return "items\weapons\swords\witcher_steel_scabbards\witcher_steel_netflix_scabbard.w2ent";
-            default:                        return "";
+            default:                       return "";
         }
     }
 
     function SetSteelScabbard(sword_steel : SItemUniqueId, school: DSSchoolSet)
     {
+        if(current_steel_template)
+        {
+            ExcludeScabbardTemplate(current_steel_template);
+            current_steel_template = NULL;
+        }
+
         if(!thePlayer.GetInventory().IsItemSteelSwordUsableByPlayer(sword_steel)) 
         {
             return;
@@ -126,19 +176,20 @@ class DynamicScabbards
             return;
         }
 
-        if(current_steel_template)
-        {
-            ExcludeOldScabbardTemplate(current_steel_template);
-        }
-
         current_steel_template = CreateTemplate(GetSteelScabbardPath(school));
-        IncludeNewScabbardTemplate(current_steel_template);
+        IncludeScabbardTemplate(current_steel_template);
 
-        thePlayer.AddTimer('HideSteelScabbard', 0.01, false);
+        thePlayer.AddTimer('HideSteelScabbard', scabbard_hide_delay, false);
     }
 
     function SetSilverScabbard(sword_silver : SItemUniqueId, school: DSSchoolSet)
     {
+        if (current_silver_template)
+        {   
+            ExcludeScabbardTemplate(current_silver_template);
+            current_silver_template = NULL;
+        }
+
         if(!thePlayer.GetInventory().IsItemSilverSwordUsableByPlayer(sword_silver)) 
         {
             return;
@@ -149,29 +200,37 @@ class DynamicScabbards
             return;
         }
 
-        if (current_silver_template)
-        {   
-            ExcludeOldScabbardTemplate(current_silver_template);
-        }
-
         current_silver_template = CreateTemplate(GetSilverScabbardPath(school));
-        IncludeNewScabbardTemplate(current_silver_template);
+        IncludeScabbardTemplate(current_silver_template);
 
-        thePlayer.AddTimer('HideSilverScabbard', 0.01, false);
+        thePlayer.AddTimer('HideSilverScabbard', scabbard_hide_delay, false);
     }
 
     function ClearSteelScabbard()
     {
-        ExcludeOldScabbardTemplate(current_steel_template);
-        HideScabbards('steel_scabbards', false);
+        ExcludeScabbardTemplate(current_steel_template);
+        thePlayer.AddTimer('ShowSteelScabbard', scabbard_hide_delay, false);
         current_steel_template = NULL;
     }
 
     function ClearSilverScabbard()
     {
-        ExcludeOldScabbardTemplate(current_silver_template);
-        HideScabbards('silver_scabbards', false);
+        ExcludeScabbardTemplate(current_silver_template);
+        thePlayer.AddTimer('ShowSilverScabbard', scabbard_hide_delay, false);
         current_silver_template = NULL;
+    }
+
+    function ClearScabbards()
+    {
+        if (current_steel_template)
+        {
+            ClearSteelScabbard();
+        }
+
+        if (current_silver_template)
+        {
+            ClearSilverScabbard();
+        }
     }
 
     function UpdateSteelScabbard(school: DSSchoolSet)
@@ -208,17 +267,20 @@ class DynamicScabbards
         }
     }
 
+    // Set detection: full-set or chestplate-only mode based on chestplate_mode setting
     function CheckSingleSet(armor : name, gloves : name, pants : name, boots : name, schoolStr: string) : bool
     {
-        if (StrContains(armor, schoolStr) && 
-            StrContains(gloves, schoolStr) && 
-            StrContains(pants, schoolStr) && 
-            StrContains(boots, schoolStr))
+        if (chestplate_mode)
         {
-            return true;
+            return StrContains(armor, schoolStr);
         }
-
-        return false;
+        else
+        {
+            return (StrContains(armor, schoolStr) && 
+                    StrContains(gloves, schoolStr) && 
+                    StrContains(pants, schoolStr) && 
+                    StrContains(boots, schoolStr));
+        }
     }
 
     function CheckWitcherSets(armor : name, gloves : name, pants : name, boots : name, out school: DSSchoolSet) : bool
@@ -253,12 +315,24 @@ class DynamicScabbards
         witcher = GetWitcherPlayer();
         inv = thePlayer.GetInventory();
 
-        if (witcher.GetItemEquippedOnSlot(EES_Armor, armor)   && 
-            witcher.GetItemEquippedOnSlot(EES_Gloves, gloves) && 
-            witcher.GetItemEquippedOnSlot(EES_Pants, pants)   && 
-            witcher.GetItemEquippedOnSlot(EES_Boots, boots))
+        if (chestplate_mode)
         {
-            return CheckWitcherSets(inv.GetItemName(armor), inv.GetItemName(gloves), inv.GetItemName(pants), inv.GetItemName(boots), school);
+            // only read chestplate armor piece
+            if (witcher.GetItemEquippedOnSlot(EES_Armor, armor))
+            {
+                return CheckWitcherSets(inv.GetItemName(armor), '', '', '', school);
+            }
+        }
+        else
+        {
+            // all pieces must be equipped
+            if (witcher.GetItemEquippedOnSlot(EES_Armor, armor)   && 
+                witcher.GetItemEquippedOnSlot(EES_Gloves, gloves) && 
+                witcher.GetItemEquippedOnSlot(EES_Pants, pants)   && 
+                witcher.GetItemEquippedOnSlot(EES_Boots, boots))
+            {
+                return CheckWitcherSets(inv.GetItemName(armor), inv.GetItemName(gloves), inv.GetItemName(pants), inv.GetItemName(boots), school);
+            }
         }
         
         return false;
@@ -291,40 +365,7 @@ class DynamicScabbards
         }
     }
 
-    public function SetScabbards(optional slot : EEquipmentSlots)
-    {   
-        var school : DSSchoolSet;
-
-        if (!CheckEquippedArmor(school))
-        {
-            if (current_steel_template)
-            {
-                ClearSteelScabbard();
-            }
-
-            if (current_silver_template)
-            {
-                ClearSilverScabbard();
-            }
-
-            return;
-        }
-
-        if (slot == EES_SteelSword)
-        {
-            UpdateSteelScabbard(school);
-        }
-        else if (slot == EES_SilverSword)
-        {
-            UpdateSilverScabbard(school);
-        }
-        else // slot defaults to EES_InvalidSlot
-        {
-            UpdateSteelScabbard(school);
-            UpdateSilverScabbard(school);
-        }
-    }
-
+    // Determine which slots trigger scabbard updates based on mode
     public function IsSwordOrArmorSlot(slot : EEquipmentSlots) : bool
     {
         switch (slot)
@@ -332,19 +373,35 @@ class DynamicScabbards
             case EES_SteelSword:
             case EES_SilverSword:
             case EES_Armor:
+                return true;
             case EES_Boots:
             case EES_Pants:
             case EES_Gloves:
-                return true;
+                // In chestplate mode, gloves/pants/boots don't trigger updates
+                return !chestplate_mode;
         }
 
         return false;
     }
 
-    public function ClearTemplateCacheAfterLoad()
-    {
-        current_steel_template = NULL;
-        current_silver_template = NULL;
+    public function SetScabbards()
+    {   
+        var school : DSSchoolSet;
+
+        if (!enabled)
+        {
+            ClearScabbards();
+            return;
+        }
+
+        if (!CheckEquippedArmor(school))
+        {
+            ClearScabbards();
+            return;
+        }
+
+        UpdateSteelScabbard(school);
+        UpdateSilverScabbard(school);
     }
 }
 
@@ -354,10 +411,70 @@ public var ds : DynamicScabbards;
 @addMethod(CR4Player)
 public function InitDS()
 {
+    var currentVersion: string = "2.00";
+    var currentVersionFloat: float = 2.00;
+
+    var enabledValue: string;
+    var chestModeValue: string;
+
+    var inGameConfig: CInGameConfigWrapper;
+
     this.ds = new DynamicScabbards in this;
+    inGameConfig = theGame.GetInGameConfigWrapper();
+    
+    if (!inGameConfig.GetVarValue('DSOptions', 'DSVersion'))
+    {
+        inGameConfig.SetVarValue('DSOptions', 'DSEnabled', true);
+        inGameConfig.SetVarValue('DSOptions', 'DSModeChestplate', false);
+        inGameConfig.SetVarValue('DSOptions', 'DSVersion', currentVersion);
+        theGame.SaveUserSettings();
+    }
+    else if (StringToFloat(inGameConfig.GetVarValue('DSOptions', 'DSVersion')) < currentVersionFloat)
+    {
+        inGameConfig.SetVarValue('DSOptions', 'DSVersion', currentVersion);
+        theGame.SaveUserSettings();
+    }
+    
+    // Load settings with fallbacks for missing XML
+    enabledValue = inGameConfig.GetVarValue('DSOptions', 'DSEnabled');
+    chestModeValue = inGameConfig.GetVarValue('DSOptions', 'DSModeChestplate');
+    
+    if (enabledValue != "")
+    {
+        this.ds.SetEnabled(enabledValue);
+    }
+    else
+    {
+        this.ds.SetEnabled(true); // missing xml defaults to enabling the mod
+    }
+    
+    if (chestModeValue != "")
+    {
+        this.ds.SetChestplateMode(chestModeValue);
+    }
+    else
+    {
+        this.ds.SetChestplateMode(false); // missing xml defaults to chestplate mode to be disabled
+    }
 }
 
-// we need timer functions to delay the call to hide vanilla scabbards, otherwise the entity it will try to target won't be loaded yet
+@addMethod(CR4Player)
+function EnsureDSInitializedAndEnabled() : bool
+{
+    if (!ds)
+    {
+       InitDS();
+    }
+
+    if(!ds.IsEnabled())
+    {
+        return false;
+    }
+    
+    return true;
+}
+
+// we need timer functions to delay the call to hide/show vanilla scabbards, otherwise the entity it will try to target won't be loaded yet
 @addMethod(CR4Player)
 timer function HideSteelScabbard(dt : float, id : int)
 {
@@ -370,18 +487,62 @@ timer function HideSilverScabbard(dt : float, id : int)
     ds.HideScabbards('silver_scabbards', true);
 }
 
-@wrapMethod(CR4Game)
-function OnAfterLoadingScreenGameStart()
+@addMethod(CR4Player)
+timer function ShowSteelScabbard(dt : float, id : int)
 {
-    wrappedMethod();
+    ds.HideScabbards('steel_scabbards', false);
+}
 
-    if (!thePlayer.ds) 
+@addMethod(CR4Player)
+timer function ShowSilverScabbard(dt : float, id : int)
+{
+    ds.HideScabbards('silver_scabbards', false);
+}
+
+@addMethod(CR4Player)
+timer function SetScabbardsDelayed(dt : float, id : int)
+{
+    ds.SetScabbards();
+}
+
+@addMethod(CR4Player)
+function HandleScabbardUpdate(slot : EEquipmentSlots)
+{
+    if (ds.IsSwordOrArmorSlot(slot))
     {
-        thePlayer.InitDS();
+        if(theGame.GetGuiManager().IsAnyMenu()) // we're in inventory, swap only after closing the inventory (handled by OnClosingMenu())
+        {
+            if (!ds.IsPendingUpdate())
+            {
+                ds.SetPendingUpdate(true);
+            }
+        }
+        else // we're for example in cutscene or at barber, delay the call
+        {
+            AddTimer('SetScabbardsDelayed', 0.6, false); // note: 0.5 is too low for barber
+        }
+    }
+}
+
+// this covers Ciri swap and OnAfterLoadingScreenGameStart (e.g. Loading a save file, fast travelling etc.)
+@wrapMethod(CActor)
+function OnAppearanceChanged()
+{
+    var result : bool;
+
+    result = wrappedMethod();
+
+    if (this != thePlayer)
+    {
+        return result;
     }
 
-    thePlayer.ds.ClearTemplateCacheAfterLoad();
-    thePlayer.ds.SetScabbards();
+    if (thePlayer.EnsureDSInitializedAndEnabled())
+    {
+        thePlayer.AddTimer('SetScabbardsDelayed', 0.15, false); // note: 0.1 is too low after loading a game (or after ciri sequence)
+    }
+
+    return result;
 }
 
 @wrapMethod(W3PlayerWitcher)
@@ -391,14 +552,9 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
 
     result = wrappedMethod(item, slot, ignoreMounting, toHand);
 
-    if (!thePlayer.ds)
+    if (thePlayer.EnsureDSInitializedAndEnabled())
     {
-       thePlayer.InitDS();
-    }
-
-    if (thePlayer.ds.IsSwordOrArmorSlot(slot))
-    {
-        thePlayer.ds.SetScabbards(slot);
+        thePlayer.HandleScabbardUpdate(slot);
     }
 
     return result;
@@ -411,14 +567,117 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
 
     result = wrappedMethod(slot, reequipped);
 
+    if (thePlayer.EnsureDSInitializedAndEnabled())
+    {
+        thePlayer.HandleScabbardUpdate(slot);
+    }
+
+    return result;
+}
+
+@wrapMethod(CR4CommonMenu)
+function OnClosingMenu()
+{
+    var result: bool;
+
+    result = wrappedMethod();
+
+    if (thePlayer.EnsureDSInitializedAndEnabled())
+    {
+        if (thePlayer.ds.IsPendingUpdate())
+        {
+            thePlayer.ds.SetScabbards();
+        }
+    }
+
+    return result;
+}
+
+// update the menu sfw for chestplate armor piece only setting. Disabling the options to interact with the menu when the mod is turned off prevents race conditions and exceptions
+@addMethod(CR4IngameMenu)
+function UpdateDSChestplateSettings(disabled : bool)
+{
+    var dataArray : CScriptedFlashArray;
+    var dataObject : CScriptedFlashObject;
+    
+    dataArray = m_flashValueStorage.CreateTempFlashArray();
+    dataObject = m_flashValueStorage.CreateTempFlashObject();
+
+    dataObject.SetMemberFlashUInt('tag', NameToFlashUInt('DSModeChestplate'));
+    dataObject.SetMemberFlashBool('disabled', disabled);
+
+    dataArray.PushBackFlashObject(dataObject);
+
+    m_flashValueStorage.SetFlashArray('options.update_disabled', dataArray);
+}
+
+@wrapMethod(CR4IngameMenu)
+function OnOptionValueChanged(groupId : int, optionName : name, optionValue : string)
+{
+    var result : bool;
+    var groupName : name;
+    var inGameConfig: CInGameConfigWrapper;
+    var modEnabled: bool;
+
+    result = wrappedMethod(groupId, optionName, optionValue);
+
+    if(result)
+    {
+       return result; 
+    }
+
+    inGameConfig = theGame.GetInGameConfigWrapper();
+    groupName = inGameConfig.GetGroupName(groupId);
+
+    if(groupName != 'DSOptions')
+	{
+        return result;
+	}
+
     if (!thePlayer.ds)
     {
        thePlayer.InitDS();
     }
 
-    if (thePlayer.ds.IsSwordOrArmorSlot(slot))
+    switch(optionName)
     {
-        thePlayer.ds.SetScabbards(slot);
+        case 'DSEnabled':
+            modEnabled = inGameConfig.GetVarValue(groupName, 'DSEnabled');
+
+            thePlayer.ds.SetEnabled(modEnabled);
+            thePlayer.ds.SetScabbards();
+            UpdateDSChestplateSettings(!modEnabled);
+
+            break;
+            
+        case 'DSModeChestplate':
+            thePlayer.ds.SetChestplateMode(inGameConfig.GetVarValue(groupName, 'DSModeChestplate'));
+            thePlayer.ds.SetScabbards();
+            break;
+    }
+
+    return result;
+}
+
+// disable the option to change chestplate armor piece settings when the mod is turned off in settings (before changing any value)
+@wrapMethod(CR4IngameMenu)
+function OnShowOptionSubmenu(actionType : int, menuTag : int, id : string)
+{
+    var result: bool;
+    var inGameConfig: CInGameConfigWrapper;
+    var modEnabled : bool;
+
+    result = wrappedMethod(actionType, menuTag, id);
+
+    if (id == "DS_settings")
+    {
+        inGameConfig = theGame.GetInGameConfigWrapper();
+        modEnabled = inGameConfig.GetVarValue('DSOptions', 'DSEnabled');
+
+        if (!modEnabled)
+        {
+            UpdateDSChestplateSettings(true);
+        }
     }
 
     return result;
