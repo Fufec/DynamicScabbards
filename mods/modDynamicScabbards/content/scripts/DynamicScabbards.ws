@@ -411,8 +411,8 @@ public var ds : DynamicScabbards;
 @addMethod(CR4Player)
 public function InitDS()
 {
-    var currentVersion: string = "2.00";
-    var currentVersionFloat: float = 2.00;
+    var currentVersion: string = "2.01";
+    var currentVersionFloat: float = 2.01;
 
     var enabledValue: string;
     var chestModeValue: string;
@@ -587,6 +587,7 @@ function OnClosingMenu()
         if (thePlayer.ds.IsPendingUpdate())
         {
             thePlayer.ds.SetScabbards();
+            thePlayer.ds.SetPendingUpdate(false);
         }
     }
 
