@@ -67,6 +67,8 @@ class DynamicScabbards
             case 'Scoiatael sword 1_crafted':
             case 'Scoiatael sword 2':
             case 'Scoiatael sword 2_crafted':
+            case 'Scoiatael sword 3':
+            case 'Scoiatael sword 3_crafted':
             case 'Scoiatael sword 4':
             case 'mq7007 Elven Sword':
             case 'Ofir Sabre 1':
@@ -411,8 +413,8 @@ public var ds : DynamicScabbards;
 @addMethod(CR4Player)
 public function InitDS()
 {
-    var currentVersion: string = "2.01";
-    var currentVersionFloat: float = 2.01;
+    var currentVersion: string = "2.02";
+    var currentVersionFloat: float = 2.02;
 
     var enabledValue: string;
     var chestModeValue: string;
