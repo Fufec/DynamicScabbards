@@ -1,0 +1,17 @@
+# Basic information about this project
+[content]
+name = "mod0_DS_SOH_Patch"
+description = "A patch for Dynamic Scabbards and Swords on Hip or Swords on Hip when cloaked."
+version = "1.0.0"
+authors = ["Fufec"]
+game_version = "4.04"
+scripts_root = "content/scripts"
+
+# Any dependencies that this project might need
+[dependencies]
+content0 = true
+# modDynamicScabbards
+# modWeaponsCarrying OR modSwordsOnHipWhenCloaked
+
+# For details check the manual
+# https://spontancombust.github.io/witcherscript-ide/user-manual/project-system/#manifest-format
