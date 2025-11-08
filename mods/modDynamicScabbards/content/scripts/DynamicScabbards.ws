@@ -52,7 +52,7 @@ class DynamicScabbards
     }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
-    function IsSteelException(weapon: SItemUniqueId) : bool
+    public function IsSteelException(weapon: SItemUniqueId) : bool
     {
         var current : name;
         current = thePlayer.GetInventory().GetItemName(weapon);
@@ -90,7 +90,7 @@ class DynamicScabbards
         return false;
     }
 
-    function IsSilverException(weapon: SItemUniqueId) : bool
+    public function IsSilverException(weapon: SItemUniqueId) : bool
     {
         var current : name;
         current = thePlayer.GetInventory().GetItemName(weapon);
@@ -128,7 +128,7 @@ class DynamicScabbards
         return (CEntityTemplate)LoadResource(path, true);
     }
 
-    function GetSilverScabbardPath(school: DSSchoolSet) : string
+    public function GetSilverScabbardPath(school: DSSchoolSet) : string
     {
         switch (school)
         {
@@ -144,7 +144,7 @@ class DynamicScabbards
         }
     }
 
-    function GetSteelScabbardPath(school: DSSchoolSet) : string
+    public function GetSteelScabbardPath(school: DSSchoolSet) : string
     {
         switch (school)
         {
@@ -304,7 +304,7 @@ class DynamicScabbards
         return false;
     }
 
-    function CheckEquippedArmor(out school: DSSchoolSet) : bool
+    public function CheckEquippedArmor(out school: DSSchoolSet) : bool
     {
         var armor : SItemUniqueId;
         var gloves : SItemUniqueId;
@@ -413,8 +413,8 @@ public var ds : DynamicScabbards;
 @addMethod(CR4Player)
 public function InitDS()
 {
-    var currentVersion: string = "2.02";
-    var currentVersionFloat: float = 2.02;
+    var currentVersion: string = "2.10";
+    var currentVersionFloat: float = 2.10;
 
     var enabledValue: string;
     var chestModeValue: string;
@@ -508,7 +508,7 @@ timer function SetScabbardsDelayed(dt : float, id : int)
 }
 
 @addMethod(CR4Player)
-function HandleScabbardUpdate(slot : EEquipmentSlots)
+function HandleScabbardUpdate(item : SItemUniqueId, slot : EEquipmentSlots)
 {
     if (ds.IsSwordOrArmorSlot(slot))
     {
@@ -554,9 +554,14 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
 
     result = wrappedMethod(item, slot, ignoreMounting, toHand);
 
+    if (!result)
+    {
+        return result;
+    }
+
     if (thePlayer.EnsureDSInitializedAndEnabled())
     {
-        thePlayer.HandleScabbardUpdate(slot);
+        thePlayer.HandleScabbardUpdate(item, slot);
     }
 
     return result;
@@ -566,18 +571,47 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
 function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool) : bool
 {
     var result : bool;
+    var item : SItemUniqueId;
+
+    GetItemEquippedOnSlot(slot, item);
 
     result = wrappedMethod(slot, reequipped);
 
+    if (!result)
+    {
+        return result;
+    }
+
     if (thePlayer.EnsureDSInitializedAndEnabled())
     {
-        thePlayer.HandleScabbardUpdate(slot);
+        thePlayer.HandleScabbardUpdate(item, slot);
     }
 
     return result;
 }
 
+// handle pending update when returning from GUI menu
 @wrapMethod(CR4CommonMenu)
+function OnClosingMenu()
+{
+    var result: bool;
+
+    result = wrappedMethod();
+
+    if (thePlayer.EnsureDSInitializedAndEnabled())
+    {
+        if (thePlayer.ds.IsPendingUpdate())
+        {
+            thePlayer.ds.SetScabbards();
+            thePlayer.ds.SetPendingUpdate(false);
+        }
+    }
+
+    return result;
+}
+
+// handle pending updates when returning from pause menu
+@wrapMethod(CR4CommonIngameMenu)
 function OnClosingMenu()
 {
     var result: bool;
@@ -655,7 +689,7 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
             
         case 'DSModeChestplate':
             thePlayer.ds.SetChestplateMode(inGameConfig.GetVarValue(groupName, 'DSModeChestplate'));
-            thePlayer.ds.SetScabbards();
+            thePlayer.ds.SetPendingUpdate(true);
             break;
     }
 
