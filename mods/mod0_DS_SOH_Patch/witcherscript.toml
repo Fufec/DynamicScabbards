@@ -2,7 +2,7 @@
 [content]
 name = "mod0_DS_SOH_Patch"
 description = "A patch for Dynamic Scabbards and Swords on Hip or Swords on Hip when cloaked."
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Fufec"]
 game_version = "4.04"
 scripts_root = "content/scripts"

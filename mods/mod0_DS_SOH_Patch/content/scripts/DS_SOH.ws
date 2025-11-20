@@ -643,24 +643,12 @@ public function IsCloakInSlot(item : SItemUniqueId, slot: EEquipmentSlots) : boo
     return false;
 }
 
-@replaceMethod(CR4Player)
+@wrapMethod(CR4Player)
 function HandleScabbardUpdate(item : SItemUniqueId, slot : EEquipmentSlots)
 {
-    if (ds.IsSwordOrArmorSlot(slot))
-    {
-        if(theGame.GetGuiManager().IsAnyMenu()) // we're in inventory, swap only after closing the inventory (handled by OnClosingMenu())
-        {
-            if (!ds.IsPendingUpdate())
-            {
-                ds.SetPendingUpdate(true);
-            }
-        }
-        else // we're for example in cutscene or at barber, delay the call
-        {
-            AddTimer('SetScabbardsDelayed', 0.6, false); // note: 0.5 is too low for barber
-        }
-    } // we check if the item that was equipped / unequipped was cloak and update the scabbards
-    else if (ds.IsCloakInSlot(item, slot))
+    wrappedMethod(item, slot);
+
+    if (ds.IsCloakInSlot(item, slot))
     {
         AddTimer('SetScabbardsDelayed', 0.2, false);
     }
