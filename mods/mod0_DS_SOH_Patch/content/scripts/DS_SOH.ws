@@ -581,8 +581,10 @@ public function IsSOHControllingScabbards() : bool
         return false;
     }
 
-    // only return true when the preset is not "vanilla"
-    return  Configsw.GetVarValue('weapons_carrying_swords_main', 'carrying_steel_scab') || Configsw.GetVarValue('weapons_carrying_swords_main', 'carrying_silver_scab');
+    // mod0_DS_SOH_Patch: SOH is active whenever it hides vanilla swords (every preset except Vanilla)
+    // Vanilla preset has carrying_hide_steel/silver = false, so DS handles scabbards normally
+    return  Configsw.GetVarValue('weapons_carrying_swords_main', 'carrying_hide_steel')
+         || Configsw.GetVarValue('weapons_carrying_swords_main', 'carrying_hide_silver');
 }
 
 @wrapMethod(CR4IngameMenu)
