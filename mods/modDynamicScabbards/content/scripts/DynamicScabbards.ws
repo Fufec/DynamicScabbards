@@ -160,13 +160,9 @@ class DynamicScabbards
         }
     }
 
-    function SetSteelScabbard(sword_steel : SItemUniqueId, school: DSSchoolSet)
+    function LoadSteelScabbard(sword_steel : SItemUniqueId, school: DSSchoolSet)
     {
-        if(current_steel_template)
-        {
-            ExcludeScabbardTemplate(current_steel_template);
-            current_steel_template = NULL;
-        }
+        UnloadSteelScabbard();
 
         if(!thePlayer.GetInventory().IsItemSteelSwordUsableByPlayer(sword_steel)) 
         {
@@ -181,16 +177,12 @@ class DynamicScabbards
         current_steel_template = CreateTemplate(GetSteelScabbardPath(school));
         IncludeScabbardTemplate(current_steel_template);
 
-        thePlayer.AddTimer('HideSteelScabbard', scabbard_hide_delay, false);
+        thePlayer.AddTimer('HideVanillaSteelScabbard', scabbard_hide_delay, false);
     }
 
-    function SetSilverScabbard(sword_silver : SItemUniqueId, school: DSSchoolSet)
+    function LoadSilverScabbard(sword_silver : SItemUniqueId, school: DSSchoolSet)
     {
-        if (current_silver_template)
-        {   
-            ExcludeScabbardTemplate(current_silver_template);
-            current_silver_template = NULL;
-        }
+        UnloadSilverScabbard();
 
         if(!thePlayer.GetInventory().IsItemSilverSwordUsableByPlayer(sword_silver)) 
         {
@@ -205,67 +197,76 @@ class DynamicScabbards
         current_silver_template = CreateTemplate(GetSilverScabbardPath(school));
         IncludeScabbardTemplate(current_silver_template);
 
-        thePlayer.AddTimer('HideSilverScabbard', scabbard_hide_delay, false);
+        thePlayer.AddTimer('HideVanillaSilverScabbard', scabbard_hide_delay, false);
     }
 
-    function ClearSteelScabbard()
-    {
-        ExcludeScabbardTemplate(current_steel_template);
-        thePlayer.AddTimer('ShowSteelScabbard', scabbard_hide_delay, false);
-        current_steel_template = NULL;
-    }
-
-    function ClearSilverScabbard()
-    {
-        ExcludeScabbardTemplate(current_silver_template);
-        thePlayer.AddTimer('ShowSilverScabbard', scabbard_hide_delay, false);
-        current_silver_template = NULL;
-    }
-
-    function ClearScabbards()
+    public function UnloadSteelScabbard()
     {
         if (current_steel_template)
         {
-            ClearSteelScabbard();
-        }
-
-        if (current_silver_template)
-        {
-            ClearSilverScabbard();
+            ExcludeScabbardTemplate(current_steel_template);
+            current_steel_template = NULL;
         }
     }
 
-    function UpdateSteelScabbard(school: DSSchoolSet)
+    public function UnloadSilverScabbard()
+    {
+        if (current_silver_template)
+        {
+            ExcludeScabbardTemplate(current_silver_template);
+            current_silver_template = NULL;
+        }
+    }
+
+    public function UnloadScabbards()
+    {
+        UnloadSteelScabbard();
+        UnloadSilverScabbard();
+    }
+
+    public function UnloadSteelScabbardAndRestoreVanilla()
+    {
+        UnloadSteelScabbard();
+        thePlayer.AddTimer('ShowVanillaSteelScabbard', scabbard_hide_delay, false);
+    }
+
+    public function UnloadSilverScabbardAndRestoreVanilla()
+    {
+        UnloadSilverScabbard();
+        thePlayer.AddTimer('ShowVanillaSilverScabbard', scabbard_hide_delay, false);
+    }
+
+    public function UnloadScabbardsAndRestoreVanilla()
+    {
+        UnloadSteelScabbardAndRestoreVanilla();
+        UnloadSilverScabbardAndRestoreVanilla();
+    }
+
+    public function UpdateSteelScabbard(school: DSSchoolSet)
     {
         var sword_steel : SItemUniqueId;
 
         if(GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
         {
-            SetSteelScabbard(sword_steel, school);
+            LoadSteelScabbard(sword_steel, school);
         }
         else
         {
-            if (current_steel_template)
-            {
-                ClearSteelScabbard();
-            }
+            UnloadSteelScabbardAndRestoreVanilla();
         }
     }
 
-    function UpdateSilverScabbard(school: DSSchoolSet)
+    public function UpdateSilverScabbard(school: DSSchoolSet)
     {
         var sword_silver : SItemUniqueId;
 
         if(GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
         { 
-            SetSilverScabbard(sword_silver, school);
+            LoadSilverScabbard(sword_silver, school);
         }
         else
         {
-            if (current_silver_template)
-            {
-                ClearSilverScabbard();
-            }
+            UnloadSilverScabbardAndRestoreVanilla();
         }
     }
 
@@ -340,7 +341,7 @@ class DynamicScabbards
         return false;
     }
 
-    public function HideScabbards(category : name, hide : bool)
+    public function SetVanillaScabbardsHidden(category : name, hide : bool)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -392,13 +393,13 @@ class DynamicScabbards
 
         if (!enabled)
         {
-            ClearScabbards();
+            UnloadScabbardsAndRestoreVanilla();
             return;
         }
 
         if (!CheckEquippedArmor(school))
         {
-            ClearScabbards();
+            UnloadScabbardsAndRestoreVanilla();
             return;
         }
 
@@ -413,8 +414,8 @@ public var ds : DynamicScabbards;
 @addMethod(CR4Player)
 public function InitDS()
 {
-    var currentVersion: string = "2.10";
-    var currentVersionFloat: float = 2.10;
+    var currentVersion: string = "2.20";
+    var currentVersionFloat: float = 2.20;
 
     var enabledValue: string;
     var chestModeValue: string;
@@ -478,27 +479,27 @@ function EnsureDSInitializedAndEnabled() : bool
 
 // we need timer functions to delay the call to hide/show vanilla scabbards, otherwise the entity it will try to target won't be loaded yet
 @addMethod(CR4Player)
-timer function HideSteelScabbard(dt : float, id : int)
+timer function HideVanillaSteelScabbard(dt : float, id : int)
 {
-    ds.HideScabbards('steel_scabbards', true);
+    ds.SetVanillaScabbardsHidden('steel_scabbards', true);
 }
 
 @addMethod(CR4Player)
-timer function HideSilverScabbard(dt : float, id : int)
+timer function HideVanillaSilverScabbard(dt : float, id : int)
 {
-    ds.HideScabbards('silver_scabbards', true);
+    ds.SetVanillaScabbardsHidden('silver_scabbards', true);
 }
 
 @addMethod(CR4Player)
-timer function ShowSteelScabbard(dt : float, id : int)
+timer function ShowVanillaSteelScabbard(dt : float, id : int)
 {
-    ds.HideScabbards('steel_scabbards', false);
+    ds.SetVanillaScabbardsHidden('steel_scabbards', false);
 }
 
 @addMethod(CR4Player)
-timer function ShowSilverScabbard(dt : float, id : int)
+timer function ShowVanillaSilverScabbard(dt : float, id : int)
 {
-    ds.HideScabbards('silver_scabbards', false);
+    ds.SetVanillaScabbardsHidden('silver_scabbards', false);
 }
 
 @addMethod(CR4Player)
