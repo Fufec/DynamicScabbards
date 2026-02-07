@@ -414,8 +414,8 @@ public var ds : DynamicScabbards;
 @addMethod(CR4Player)
 public function InitDS()
 {
-    var currentVersion: string = "2.20";
-    var currentVersionFloat: float = 2.20;
+    var currentVersion: string = "2.21";
+    var currentVersionFloat: float = 2.21;
 
     var enabledValue: string;
     var chestModeValue: string;
@@ -542,7 +542,7 @@ function OnAppearanceChanged()
 
     if (thePlayer.EnsureDSInitializedAndEnabled())
     {
-        thePlayer.AddTimer('SetScabbardsDelayed', 0.15, false); // note: 0.1 is too low after loading a game (or after ciri sequence)
+        thePlayer.AddTimer('SetScabbardsDelayed', 0.2, false); // note: 0.1 is too low after loading a game (or after ciri sequence). With DS_SOH patch, 0.15 is still too low
     }
 
     return result;
