@@ -583,8 +583,8 @@ public function IsSOHControllingScabbards() : bool
 
     // mod0_DS_SOH_Patch: SOH is active whenever it hides vanilla swords (every preset except Vanilla)
     // Vanilla preset has carrying_hide_steel/silver = false, so DS handles scabbards normally
-    return  Configsw.GetVarValue('weapons_carrying_swords_main', 'carrying_hide_steel')
-         || Configsw.GetVarValue('weapons_carrying_swords_main', 'carrying_hide_silver');
+    return Configsw.GetVarValue('weapons_carrying_swords_main', 'carrying_hide_steel')
+        || Configsw.GetVarValue('weapons_carrying_swords_main', 'carrying_hide_silver');
 }
 
 @wrapMethod(CR4IngameMenu)
@@ -656,47 +656,19 @@ function HandleScabbardUpdate(item : SItemUniqueId, slot : EEquipmentSlots)
     }
 }
 
-@replaceMethod(DynamicScabbards)
+@wrapMethod(DynamicScabbards)
 function SetScabbards()
-{   
-    var school : DSSchoolSet;
+{
     var soh : W3InvisibleWeapons;
-    var soh_enabled : bool;
 
     soh = GetInvisibleEnt();
-    soh_enabled = soh && soh.IsSOHControllingScabbards();
 
-    if (!enabled)
+    if (soh && soh.IsSOHControllingScabbards())
     {
-        ClearScabbards();
-
-        if (soh_enabled)
-        {
-            soh.RefreshSOHScabbards();
-        }
-
-        return;
-    }
-
-    if (!CheckEquippedArmor(school))
-    {
-        ClearScabbards();
-
-        if (soh_enabled)
-        {
-            soh.RefreshSOHScabbards();
-        }
-
-        return;
-    }
-
-    if (soh_enabled)
-    {
-        ClearScabbards();
+        UnloadScabbardsAndRestoreVanilla();
         soh.RefreshSOHScabbards();
         return;
     }
 
-    UpdateSteelScabbard(school);
-    UpdateSilverScabbard(school);
+    wrappedMethod();
 }
