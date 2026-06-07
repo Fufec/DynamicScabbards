@@ -84,6 +84,11 @@ class DynamicScabbards
             case 'Netflix steel sword':
             case 'Netflix steel sword 1':
             case 'Netflix steel sword 2':
+            case 'Cleaver':
+            case 'Dwarven sword 1':
+            case 'Dwarven sword 1_crafted':
+            case 'Dwarven sword 2':
+            case 'Dwarven sword 2_crafted':
                 return true;
         }
 
@@ -101,6 +106,12 @@ class DynamicScabbards
             case 'Netflix silver sword':
             case 'Netflix silver sword 1':
             case 'Netflix silver sword 2':
+            case 'Tlareg':
+            case 'Tlareg_crafted':
+            case 'Dwarven silver sword 1':
+            case 'Dwarven silver sword 1_crafted':
+            case 'Dwarven silver sword 2':
+            case 'Dwarven silver sword 2_crafted':
                 return true;
         }
 
@@ -414,8 +425,8 @@ public var ds : DynamicScabbards;
 @addMethod(CR4Player)
 public function InitDS()
 {
-    var currentVersion: string = "2.21";
-    var currentVersionFloat: float = 2.21;
+    var currentVersion: string = "2.22";
+    var currentVersionFloat: float = 2.22;
 
     var enabledValue: string;
     var chestModeValue: string;
