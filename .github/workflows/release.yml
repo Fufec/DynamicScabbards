@@ -1,0 +1,86 @@
+name: release
+
+on:
+  push:
+    tags: ['*/v*']
+  workflow_dispatch:
+    inputs:
+      component:
+        description: Component
+        type: choice
+        options: [core, soh, ahw, wpiao]
+        required: true
+      dry_run:
+        description: Build only (do not upload to Nexus)
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve component and version
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = push ]; then
+            tag="${GITHUB_REF_NAME}"
+            echo "component=${tag%%/*}"  >> "$GITHUB_OUTPUT"
+            echo "version_tag=${tag#*/v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "component=${{ inputs.component }}" >> "$GITHUB_OUTPUT"
+            echo "version_tag=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build zip
+        id: build
+        run: bash package.sh "${{ steps.meta.outputs.component }}"
+
+      - name: Verify tag version matches manifest
+        if: github.event_name == 'push'
+        run: |
+          if [ "${{ steps.build.outputs.version }}" != "${{ steps.meta.outputs.version_tag }}" ]; then
+            echo "::error::tag version (${{ steps.meta.outputs.version_tag }}) != manifest (${{ steps.build.outputs.version }})"
+            exit 1
+          fi
+
+      - name: Resolve Nexus file_id
+        id: nexus
+        run: |
+          case "${{ steps.meta.outputs.component }}" in
+            core)  echo "file_id=${{ vars.NEXUS_FILE_ID_CORE }}"  >> "$GITHUB_OUTPUT" ;;
+            soh)   echo "file_id=${{ vars.NEXUS_FILE_ID_SOH }}"   >> "$GITHUB_OUTPUT" ;;
+            ahw)   echo "file_id=${{ vars.NEXUS_FILE_ID_AHW }}"   >> "$GITHUB_OUTPUT" ;;
+            wpiao) echo "file_id=${{ vars.NEXUS_FILE_ID_WPIAO }}" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Upload to Nexus
+        if: github.event_name == 'push' || inputs.dry_run == false
+        uses: Nexus-Mods/upload-action@v1
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: ${{ steps.nexus.outputs.file_id }}
+          filename: ${{ steps.build.outputs.zip }}
+          version: ${{ steps.build.outputs.version }}
+          category: main
+          archive_existing_version: true
+
+      - name: GitHub Release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" "${{ steps.build.outputs.zip }}" \
+            --title "${{ steps.meta.outputs.component }} v${{ steps.build.outputs.version }}" \
+            --notes "Automated release from tag ${GITHUB_REF_NAME}."
+
+      - name: Upload build artifact (dry run)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.component }}-v${{ steps.build.outputs.version }}
+          path: ${{ steps.build.outputs.zip }}
