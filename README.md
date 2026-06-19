@@ -11,7 +11,7 @@ Nexus: <https://www.nexusmods.com/witcher3/mods/11253>
 | `mods/mod0_DS_SOH_Patch/` | Swords on Hip / SOHWC patch | `soh` |
 | `mods/mod0_DS_WPIAO_Patch/` | Wear Preview Items As Outfits patch | `wpiao` |
 | `mods/mod0_DS_AHW_Patch/` | Auto Hide Weapons for Cloaks patch | `ahw` |
-| `bin/` | menu config (`user_config_matrix`, core only) | — |
+| `bin/` | menu config (`user_config_matrix`), ships with core | `core` |
 
 Each component is versioned **independently**; the source of truth is the
 `version` field in its `witcherscript.toml`. The repo root mirrors the game
