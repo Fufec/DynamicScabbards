@@ -441,6 +441,7 @@ public function InitDS()
 
     var enabledValue: string;
     var chestModeValue: string;
+    var schoolModeValue : string;
 
     var inGameConfig: CInGameConfigWrapper;
 
@@ -451,6 +452,7 @@ public function InitDS()
     {
         inGameConfig.SetVarValue('DSOptions', 'DSEnabled', true);
         inGameConfig.SetVarValue('DSOptions', 'DSModeChestplate', false);
+        inGameConfig.SetVarValue('DSOptions', 'DSModeSchool', 0);
         inGameConfig.SetVarValue('DSOptions', 'DSVersion', currentVersion);
         theGame.SaveUserSettings();
     }
@@ -459,11 +461,12 @@ public function InitDS()
         inGameConfig.SetVarValue('DSOptions', 'DSVersion', currentVersion);
         theGame.SaveUserSettings();
     }
-    
+
     // Load settings with fallbacks for missing XML
     enabledValue = inGameConfig.GetVarValue('DSOptions', 'DSEnabled');
     chestModeValue = inGameConfig.GetVarValue('DSOptions', 'DSModeChestplate');
-    
+    schoolModeValue = inGameConfig.GetVarValue('DSOptions', 'DSModeSchool');
+
     if (enabledValue != "")
     {
         this.ds.SetEnabled(enabledValue);
@@ -472,7 +475,16 @@ public function InitDS()
     {
         this.ds.SetEnabled(true); // missing xml defaults to enabling the mod
     }
-    
+
+    if (schoolModeValue != "")
+    {
+        this.ds.SetSchoolMode(StringToInt(schoolModeValue));
+    }
+    else
+    {
+        this.ds.SetSchoolMode(0);
+    }
+
     if (chestModeValue != "")
     {
         this.ds.SetChestplateMode(chestModeValue);
@@ -707,9 +719,13 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
             thePlayer.ds.SetEnabled(modEnabled);
             thePlayer.ds.SetScabbards();
             UpdateDSChestplateSettings(!modEnabled);
-
             break;
-            
+
+        case 'DSModeSchool':
+            thePlayer.ds.SetSchoolMode(StringToInt(inGameConfig.GetVarValue(groupName, 'DSModeSchool')));
+            thePlayer.ds.SetPendingUpdate(true);
+            break;
+
         case 'DSModeChestplate':
             thePlayer.ds.SetChestplateMode(inGameConfig.GetVarValue(groupName, 'DSModeChestplate'));
             thePlayer.ds.SetPendingUpdate(true);
