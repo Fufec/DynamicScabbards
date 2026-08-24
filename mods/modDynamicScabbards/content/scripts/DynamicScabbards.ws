@@ -14,6 +14,7 @@ class DynamicScabbards
 {
     var enabled : bool; // mod enabled
     var chestplate_mode : bool; // if true, only chestplate armor piece will be required for the swap to occur
+    var school_mode : int; // if > 0, a fixed value in DSSchoolSet to use
 
     var update_pending : bool; // true if a sword or an armor has been changed/unequipped
     default update_pending = false;
@@ -34,6 +35,11 @@ class DynamicScabbards
     public function SetChestplateMode(value : bool) 
     { 
         chestplate_mode = value; 
+    }
+
+    public function SetSchoolMode(value : int)
+    {
+        school_mode = value;
     }
 
     public function SetPendingUpdate(value: bool)
@@ -329,7 +335,12 @@ class DynamicScabbards
         witcher = GetWitcherPlayer();
         inv = thePlayer.GetInventory();
 
-        if (chestplate_mode)
+        if (school_mode > 0)
+        {
+            school = school_mode;
+            return true;
+        }
+        else if (chestplate_mode)
         {
             // only read chestplate armor piece
             if (witcher.GetItemEquippedOnSlot(EES_Armor, armor))
