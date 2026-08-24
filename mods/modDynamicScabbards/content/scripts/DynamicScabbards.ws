@@ -1,13 +1,13 @@
 enum DSSchoolSet
 {
-    DS_Set_KaerMorhen,
-    DS_Set_Bear,
-    DS_Set_Cat,
-    DS_Set_Griffin,
-    DS_Set_Manticore,
-    DS_Set_Wolf,
-    DS_Set_Viper,
-    DS_Set_ForgottenWolf
+    DS_Set_KaerMorhen = 1,
+    DS_Set_Bear = 2,
+    DS_Set_Cat = 3,
+    DS_Set_Griffin = 4,
+    DS_Set_Manticore = 5,
+    DS_Set_Wolf = 6,
+    DS_Set_Viper = 7,
+    DS_Set_ForgottenWolf = 8
 }
 
 class DynamicScabbards
