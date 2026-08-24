@@ -5,3 +5,13 @@
 1112530002|        |option_ds_version|Version
 1112530003|        |option_ds_enabled|Mod enabled
 1112530004|        |option_ds_mode_chestplate|Only chestplate armor piece required
+1112530005|        |option_ds_mode_school|Use scabbards from witcher school
+1112530010|        |preset_value_ds_mode_dynamic|Equipped
+1112530011|        |preset_value_ds_mode_kaer_morhen|Kaer Morhen
+1112530012|        |preset_value_ds_mode_bear|Bear
+1112530013|        |preset_value_ds_mode_cat|Cat
+1112530014|        |preset_value_ds_mode_griffin|Griffin
+1112530015|        |preset_value_ds_mode_manticore|Manticore
+1112530016|        |preset_value_ds_mode_viper|Viper
+1112530017|        |preset_value_ds_mode_wolf|Wolf
+1112530018|        |preset_value_ds_mode_forgotten_wolf|Forgotten Wolf
