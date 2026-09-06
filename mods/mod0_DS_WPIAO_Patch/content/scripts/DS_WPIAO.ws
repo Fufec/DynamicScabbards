@@ -61,7 +61,7 @@ function GetEquippedSchool(out school : DSSchoolSet) : bool
     {
         if (manager.DS_GetVisibleItemName(EES_Armor, armorName))
         {
-            return CheckWitcherSets(armorName, '', '', '', school);
+            return GetSchoolFromArmor(armorName, '', '', '', school);
         }
     }
     else
@@ -79,7 +79,7 @@ function GetEquippedSchool(out school : DSSchoolSet) : bool
             && manager.DS_GetVisibleItemName(EES_Pants, pantsName)
             && manager.DS_GetVisibleItemName(EES_Boots, bootsName))
         {
-            return CheckWitcherSets(armorName, glovesName, pantsName, bootsName, school);
+            return GetSchoolFromArmor(armorName, glovesName, pantsName, bootsName, school);
         }
     }
 
