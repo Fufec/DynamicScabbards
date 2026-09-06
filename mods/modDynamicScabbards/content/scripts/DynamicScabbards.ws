@@ -52,6 +52,13 @@ class DynamicScabbards
         return 'DynamicScabbard';
     }
 
+    // the tag tells a dynamic scabbard apart from a vanilla one with the same name
+    // (a wolf sword binds the same scabbard_steel_wolf_01)
+    function IsDynamicScabbard(item : SItemUniqueId) : bool
+    {
+        return thePlayer.GetInventory().ItemHasTag(item, GetDynamicScabbardTag());
+    }
+
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
     public function IsExcludedSteelSword(sword : SItemUniqueId) : bool
     {
@@ -151,8 +158,7 @@ class DynamicScabbards
         }
     }
 
-    // the tag tells a dynamic scabbard apart from a vanilla one with the same name (a wolf sword
-    // binds the same scabbard_steel_wolf_01), the name tells the school
+    // the name tells the school
     function FindDynamicScabbard(category : name, item_name : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
@@ -164,7 +170,7 @@ class DynamicScabbards
 
         for (i = 0; i < ids.Size(); i += 1)
         {
-            if (inv.ItemHasTag(ids[i], GetDynamicScabbardTag()) && inv.GetItemName(ids[i]) == item_name)
+            if (IsDynamicScabbard(ids[i]) && inv.GetItemName(ids[i]) == item_name)
             {
                 return ids[i];
             }
@@ -185,7 +191,7 @@ class DynamicScabbards
 
         for (i = 0; i < ids.Size(); i += 1)
         {
-            if (!inv.ItemHasTag(ids[i], GetDynamicScabbardTag()))
+            if (!IsDynamicScabbard(ids[i]))
             {
                 continue;
             }
@@ -244,7 +250,7 @@ class DynamicScabbards
 
         for (i = 0; i < ids.Size(); i += 1)
         {
-            if (!inv.ItemHasTag(ids[i], GetDynamicScabbardTag()) && inv.IsItemMounted(ids[i]))
+            if (!IsDynamicScabbard(ids[i]) && inv.IsItemMounted(ids[i]))
             {
                 return ids[i];
             }
@@ -268,12 +274,10 @@ class DynamicScabbards
         }
 
         scabbard_name = GetSteelScabbardItemName(school);
-
         vanilla_scabbard_id = FindMountedVanillaScabbard('steel_scabbards');
+
         if (inv.IsIdValid(vanilla_scabbard_id))
         {
-            // unmounting destroys the entity on Geralt's back but keeps the item in the inventory,
-            // so it can be mounted again when the mod lets go of the category
             inv.UnmountItem(vanilla_scabbard_id, true);
             unmounted_vanilla_steel = vanilla_scabbard_id;
         }
@@ -297,6 +301,7 @@ class DynamicScabbards
         var sword_steel : SItemUniqueId;
 
         inv = thePlayer.GetInventory();
+
         vanilla_scabbard_id = unmounted_vanilla_steel;
         UnloadSteelScabbard();
 
@@ -346,12 +351,10 @@ class DynamicScabbards
         }
 
         scabbard_name = GetSilverScabbardItemName(school);
-
         vanilla_scabbard_id = FindMountedVanillaScabbard('silver_scabbards');
+
         if (inv.IsIdValid(vanilla_scabbard_id))
         {
-            // unmounting destroys the entity on Geralt's back but keeps the item in the inventory,
-            // so it can be mounted again when the mod lets go of the category
             inv.UnmountItem(vanilla_scabbard_id, true);
             unmounted_vanilla_silver = vanilla_scabbard_id;
         }
@@ -375,6 +378,7 @@ class DynamicScabbards
         var sword_silver : SItemUniqueId;
 
         inv = thePlayer.GetInventory();
+
         vanilla_scabbard_id = unmounted_vanilla_silver;
         UnloadSilverScabbard();
 
