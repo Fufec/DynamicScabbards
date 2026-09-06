@@ -1,24 +1,3 @@
-// ============================================================================
-// Dynamic Scabbards - EXPERIMENTAL item-swap branch
-//
-// The scabbard is swapped as an inventory ITEM, not as an appearance template:
-//   - the vanilla scabbard bound to the equipped sword gets unmounted (never
-//     deleted); DS remembers it so it can be re-mounted when DS lets go,
-//   - a vanilla-defined school scabbard item (e.g. 'scabbard_steel_bear_01')
-//     is added, tagged 'DS_Scabbard' and mounted.
-// Because the mounted scabbard item now really is the school scabbard, any mod
-// that reads the scabbard through the inventory (Swords and Meditation,
-// Swords on Hip, Auto Hide Weapons, ...) picks up the correct entity without a patch.
-//
-// Verified engine behaviour this relies on:
-//   - script-added scabbard items do not survive save/load; after a load the
-//     sword's bound vanilla scabbard is mounted again and DS re-applies itself,
-//   - on a sword swap the engine unmounts the DS scabbard and mounts the new
-//     sword's bound one; DS reconciles afterwards,
-//   - cutscenes can re-mount the sword (and its scabbard), hence the
-//     OnBlockingSceneEnded hook.
-// ============================================================================
-
 enum DSSchoolSet
 {
     DS_Set_KaerMorhen,
@@ -39,8 +18,6 @@ class DynamicScabbards
     var update_pending : bool; // true if a sword or an armor has been changed/unequipped
     default update_pending = false;
 
-    // vanilla scabbards unmounted by DS, re-mounted when DS lets go of the category (runtime only,
-    // after a load the engine mounts them itself)
     var vanilla_steel : SItemUniqueId;
     var vanilla_silver : SItemUniqueId;
 
@@ -67,6 +44,12 @@ class DynamicScabbards
     public function IsPendingUpdate() : bool
     {
         return update_pending;
+    }
+
+    // Tag custom scabbard items created by this mod
+    public function GetDSItemTag() : name
+    {
+        return 'DS_Scabbard';
     }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
@@ -136,10 +119,6 @@ class DynamicScabbards
         return false;
     }
 
-    // Vanilla item definitions (category silver_scabbards / steel_scabbards):
-    //   content0  _technical_items_defs.xml : scabbard_*_1_01, scabbard_*_1_02, scabbard_silver_1_05, scabbard_*_bear_01, scabbard_*_lynx_01, scabbard_*_gryphon_01
-    //   dlc10     dlc10_wolf_swords.xml     : scabbard_*_wolf_01
-    //   content0  dlc18_netflix_swords.xml  : scabbard_*_netflix_01
     public function GetSilverScabbardItemName(school: DSSchoolSet) : name
     {
         switch (school)
@@ -172,12 +151,6 @@ class DynamicScabbards
         }
     }
 
-    // Tag marking scabbard items created by this mod. Vanilla (sword-bound) scabbards never carry it.
-    public function GetDSItemTag() : name
-    {
-        return 'DS_Scabbard';
-    }
-
     // Which scabbard item DS wants mounted for the sword in the given slot; '' means "leave vanilla"
     function GetScabbardToMount(slot : EEquipmentSlots, school : DSSchoolSet) : name
     {
@@ -204,18 +177,29 @@ class DynamicScabbards
         {
             return '';
         }
+
         return GetSilverScabbardItemName(school);
     }
 
     function RememberVanilla(slot : EEquipmentSlots, item : SItemUniqueId)
     {
-        if (slot == EES_SteelSword) { vanilla_steel = item; }
-        else                        { vanilla_silver = item; }
+        if (slot == EES_SteelSword) 
+        {
+            vanilla_steel = item;
+        }
+        else
+        {
+            vanilla_silver = item;
+        }
     }
 
     function GetRememberedVanilla(slot : EEquipmentSlots) : SItemUniqueId
     {
-        if (slot == EES_SteelSword) { return vanilla_steel; }
+        if (slot == EES_SteelSword)
+        {
+            return vanilla_steel;
+        }
+
         return vanilla_silver;
     }
 
@@ -225,13 +209,11 @@ class DynamicScabbards
         {
             inv.UnmountItem(item, true);
         }
+
         inv.RemoveItem(item, 1);
     }
 
-    // Brings one scabbard category into the wanted state:
-    //   scabbard_to_mount set  -> exactly one DS item of that name exists and is mounted, vanilla is unmounted
-    //   scabbard_to_mount ''   -> no DS item; if a sword is equipped and nothing vanilla is mounted, re-mount the remembered vanilla
-    function Reconcile(category : name, slot : EEquipmentSlots, scabbard_to_mount : name)
+    function SetScabbard(category : name, slot : EEquipmentSlots, scabbard_to_mount : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -306,8 +288,8 @@ class DynamicScabbards
 
     public function UnloadScabbardsAndRestoreVanilla()
     {
-        Reconcile('steel_scabbards',  EES_SteelSword,  '');
-        Reconcile('silver_scabbards', EES_SilverSword, '');
+        SetScabbard('steel_scabbards',  EES_SteelSword,  '');
+        SetScabbard('silver_scabbards', EES_SilverSword, '');
     }
 
     // Set detection: full-set or chestplate-only mode based on chestplate_mode setting
@@ -416,8 +398,8 @@ class DynamicScabbards
             return;
         }
 
-        Reconcile('steel_scabbards',  EES_SteelSword,  GetScabbardToMount(EES_SteelSword, school));
-        Reconcile('silver_scabbards', EES_SilverSword, GetScabbardToMount(EES_SilverSword, school));
+        SetScabbard('steel_scabbards',  EES_SteelSword,  GetScabbardToMount(EES_SteelSword, school));
+        SetScabbard('silver_scabbards', EES_SilverSword, GetScabbardToMount(EES_SilverSword, school));
     }
 }
 
