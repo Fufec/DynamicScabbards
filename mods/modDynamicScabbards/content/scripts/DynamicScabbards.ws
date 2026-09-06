@@ -53,10 +53,10 @@ class DynamicScabbards
     }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
-    public function IsExcludedSteelSword(weapon: SItemUniqueId) : bool
+    public function IsExcludedSteelSword(sword : SItemUniqueId) : bool
     {
         var current : name;
-        current = thePlayer.GetInventory().GetItemName(weapon);
+        current = thePlayer.GetInventory().GetItemName(sword);
 
         switch (current)
         {
@@ -96,10 +96,10 @@ class DynamicScabbards
         return false;
     }
 
-    public function IsExcludedSilverSword(weapon: SItemUniqueId) : bool
+    public function IsExcludedSilverSword(sword : SItemUniqueId) : bool
     {
         var current : name;
-        current = thePlayer.GetInventory().GetItemName(weapon);
+        current = thePlayer.GetInventory().GetItemName(sword);
 
         switch (current)
         {
@@ -119,22 +119,6 @@ class DynamicScabbards
         return false;
     }
 
-    public function GetSilverScabbardItemName(school: DSSchoolSet) : name
-    {
-        switch (school)
-        {
-            case DS_Set_KaerMorhen:        return 'scabbard_silver_1_01';
-            case DS_Set_Bear:              return 'scabbard_silver_bear_01';
-            case DS_Set_Cat:               return 'scabbard_silver_lynx_01';
-            case DS_Set_Griffin:           return 'scabbard_silver_gryphon_01';
-            case DS_Set_Manticore:
-            case DS_Set_Wolf:              return 'scabbard_silver_wolf_01';
-            case DS_Set_Viper:             return 'scabbard_silver_1_05';
-            case DS_Set_ForgottenWolf:     return 'scabbard_silver_netflix_01';
-            default:                       return '';
-        }
-    }
-
     public function GetSteelScabbardItemName(school: DSSchoolSet) : name
     {
         switch (school)
@@ -147,6 +131,22 @@ class DynamicScabbards
             case DS_Set_Wolf:              return 'scabbard_steel_wolf_01';
             case DS_Set_Viper:             return 'scabbard_steel_1_02';
             case DS_Set_ForgottenWolf:     return 'scabbard_steel_netflix_01';
+            default:                       return '';
+        }
+    }
+
+    public function GetSilverScabbardItemName(school: DSSchoolSet) : name
+    {
+        switch (school)
+        {
+            case DS_Set_KaerMorhen:        return 'scabbard_silver_1_01';
+            case DS_Set_Bear:              return 'scabbard_silver_bear_01';
+            case DS_Set_Cat:               return 'scabbard_silver_lynx_01';
+            case DS_Set_Griffin:           return 'scabbard_silver_gryphon_01';
+            case DS_Set_Manticore:
+            case DS_Set_Wolf:              return 'scabbard_silver_wolf_01';
+            case DS_Set_Viper:             return 'scabbard_silver_1_05';
+            case DS_Set_ForgottenWolf:     return 'scabbard_silver_netflix_01';
             default:                       return '';
         }
     }
@@ -171,8 +171,8 @@ class DynamicScabbards
         return GetInvalidUniqueId();
     }
 
-    // removes DS scabbards of the category; the first one named 'keep' (if given) stays
-    function RemoveDSScabbards(category : name, optional keep : name)
+    // removes DS scabbards of the category; the first one named keep_item_name (if given) stays
+    function RemoveDSScabbards(category : name, optional keep_item_name : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -189,7 +189,7 @@ class DynamicScabbards
                 continue;
             }
 
-            if (!kept && IsNameValid(keep) && inv.GetItemName(ids[i]) == keep)
+            if (!kept && IsNameValid(keep_item_name) && inv.GetItemName(ids[i]) == keep_item_name)
             {
                 kept = true;
                 continue;
@@ -426,36 +426,36 @@ class DynamicScabbards
     }
 
     // Set detection: full-set or chestplate-only mode based on chestplate_mode setting
-    function CheckSingleSet(armor : name, gloves : name, pants : name, boots : name, schoolStr: string) : bool
+    function MatchesSchool(armor : name, gloves : name, pants : name, boots : name, school_name : string) : bool
     {
         if (chestplate_mode)
         {
-            return StrContains(armor, schoolStr);
+            return StrContains(armor, school_name);
         }
         else
         {
-            return (StrContains(armor, schoolStr) && 
-                    StrContains(gloves, schoolStr) && 
-                    StrContains(pants, schoolStr) && 
-                    StrContains(boots, schoolStr));
+            return (StrContains(armor, school_name) && 
+                    StrContains(gloves, school_name) && 
+                    StrContains(pants, school_name) && 
+                    StrContains(boots, school_name));
         }
     }
 
-    function CheckWitcherSets(armor : name, gloves : name, pants : name, boots : name, out school: DSSchoolSet) : bool
+    function GetSchoolFromArmor(armor : name, gloves : name, pants : name, boots : name, out school: DSSchoolSet) : bool
     {
-        if (CheckSingleSet(armor, gloves, pants, boots, "Starting"))      { school = DS_Set_KaerMorhen;     return true;}
-        if (CheckSingleSet(armor, gloves, pants, boots, "Bear"))          { school = DS_Set_Bear;           return true;}
-        if (CheckSingleSet(armor, gloves, pants, boots, "Lynx"))          { school = DS_Set_Cat;            return true;}
-        if (CheckSingleSet(armor, gloves, pants, boots, "Gryphon"))       { school = DS_Set_Griffin;        return true;}
-        if (CheckSingleSet(armor, gloves, pants, boots, "Red Wolf"))      { school = DS_Set_Manticore;      return true;}
-        if (CheckSingleSet(armor, gloves, pants, boots, "Wolf"))          { school = DS_Set_Wolf;           return true;}
-        if (CheckSingleSet(armor, gloves, pants, boots, "EP1 Witcher"))   { school = DS_Set_Viper;          return true;}
-        if (CheckSingleSet(armor, gloves, pants, boots, "Netflix"))       { school = DS_Set_ForgottenWolf;  return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "Starting"))      { school = DS_Set_KaerMorhen;     return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "Bear"))          { school = DS_Set_Bear;           return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "Lynx"))          { school = DS_Set_Cat;            return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "Gryphon"))       { school = DS_Set_Griffin;        return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "Red Wolf"))      { school = DS_Set_Manticore;      return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "Wolf"))          { school = DS_Set_Wolf;           return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "EP1 Witcher"))   { school = DS_Set_Viper;          return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "Netflix"))       { school = DS_Set_ForgottenWolf;  return true;}
 
         // Built-in compatibility for Witcher School Set Rework and Balance mod
-        if (CheckSingleSet(armor, gloves, pants, boots, "Kaer Morhen"))   { school = DS_Set_KaerMorhen;     return true;}
-        if (CheckSingleSet(armor, gloves, pants, boots, "Viper"))         { school = DS_Set_Viper;          return true;}
-        if (CheckSingleSet(armor, gloves, pants, boots, "Manticore"))     { school = DS_Set_Manticore;      return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "Kaer Morhen"))   { school = DS_Set_KaerMorhen;     return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "Viper"))         { school = DS_Set_Viper;          return true;}
+        if (MatchesSchool(armor, gloves, pants, boots, "Manticore"))     { school = DS_Set_Manticore;      return true;}
 
         return false;
     }
@@ -478,7 +478,7 @@ class DynamicScabbards
             // only read chestplate armor piece
             if (witcher.GetItemEquippedOnSlot(EES_Armor, armor))
             {
-                return CheckWitcherSets(inv.GetItemName(armor), '', '', '', school);
+                return GetSchoolFromArmor(inv.GetItemName(armor), '', '', '', school);
             }
         }
         else
@@ -489,7 +489,7 @@ class DynamicScabbards
                 witcher.GetItemEquippedOnSlot(EES_Pants, pants)   && 
                 witcher.GetItemEquippedOnSlot(EES_Boots, boots))
             {
-                return CheckWitcherSets(inv.GetItemName(armor), inv.GetItemName(gloves), inv.GetItemName(pants), inv.GetItemName(boots), school);
+                return GetSchoolFromArmor(inv.GetItemName(armor), inv.GetItemName(gloves), inv.GetItemName(pants), inv.GetItemName(boots), school);
             }
         }
         
@@ -611,7 +611,7 @@ timer function SetScabbardsDelayed(dt : float, id : int)
 }
 
 @addMethod(CR4Player)
-function HandleScabbardUpdate(item : SItemUniqueId, slot : EEquipmentSlots)
+function HandleScabbardUpdate(slot : EEquipmentSlots)
 {
     if (ds.IsSwordOrArmorSlot(slot))
     {
@@ -644,7 +644,7 @@ function OnAppearanceChanged()
 
     if (thePlayer.EnsureDSInitializedAndEnabled())
     {
-        thePlayer.AddTimer('SetScabbardsDelayed', 0.2, false); // note: 0.1 is too low after loading a game (or after ciri sequence). With DS_SOH patch, 0.15 is still too low
+        thePlayer.AddTimer('SetScabbardsDelayed', 0.2, false); // note: 0.1 is too low after loading a game (or after ciri sequence)
     }
 
     return result;
@@ -681,7 +681,7 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
 
     if (thePlayer.EnsureDSInitializedAndEnabled())
     {
-        thePlayer.HandleScabbardUpdate(item, slot);
+        thePlayer.HandleScabbardUpdate(slot);
     }
 
     return result;
@@ -691,9 +691,6 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
 function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool) : bool
 {
     var result : bool;
-    var item : SItemUniqueId;
-
-    GetItemEquippedOnSlot(slot, item);
 
     result = wrappedMethod(slot, reequipped);
 
@@ -704,7 +701,7 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
 
     if (thePlayer.EnsureDSInitializedAndEnabled())
     {
-        thePlayer.HandleScabbardUpdate(item, slot);
+        thePlayer.HandleScabbardUpdate(slot);
     }
 
     return result;
