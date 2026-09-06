@@ -259,6 +259,19 @@ class DynamicScabbards
         return GetInvalidUniqueId();
     }
 
+    // after a load or a scene the engine mounts the bound scabbard of the equipped sword right away
+    // but spawns its entity a bit later; changes made before that are thrown away
+    function IsVanillaScabbardSpawned(category : name) : bool
+    {
+        var inv : CInventoryComponent;
+        var vanilla_scabbard_id : SItemUniqueId;
+
+        inv = thePlayer.GetInventory();
+        vanilla_scabbard_id = FindMountedVanillaScabbard(category);
+
+        return inv.IsIdValid(vanilla_scabbard_id) && inv.GetItemEntityUnsafe(vanilla_scabbard_id);
+    }
+
     function LoadSteelScabbard(sword_steel : SItemUniqueId, school : DSSchoolSet)
     {
         var inv : CInventoryComponent;
@@ -599,10 +612,29 @@ function IsDynamicScabbardsEnabled() : bool
     return true;
 }
 
+@addField(CR4Player)
+var scabbards_wait_time : float; // how long the update has been waiting for the engine
+
+// the engine finishes a load or a scene on its own schedule, so the update waits until the
+// vanilla scabbard is spawned; the time limit covers the cases where nothing is going to spawn
 @addMethod(CR4Player)
-timer function SetScabbardsDelayed(dt : float, id : int)
+function SetScabbardsWhenReady()
 {
-    ds.SetScabbards();
+    scabbards_wait_time = 0;
+    RemoveTimer('SetScabbardsWhenReadyTick');
+    AddTimer('SetScabbardsWhenReadyTick', 0.1, true);
+}
+
+@addMethod(CR4Player)
+timer function SetScabbardsWhenReadyTick(dt : float, id : int)
+{
+    scabbards_wait_time += dt;
+
+    if (ds.IsVanillaScabbardSpawned('steel_scabbards') || ds.IsVanillaScabbardSpawned('silver_scabbards') || scabbards_wait_time > 5)
+    {
+        RemoveTimer('SetScabbardsWhenReadyTick');
+        ds.SetScabbards();
+    }
 }
 
 @addMethod(CR4Player)
@@ -617,9 +649,9 @@ function HandleScabbardUpdate(slot : EEquipmentSlots)
                 ds.SetPendingUpdate(true);
             }
         }
-        else // experiment: no delay (was AddTimer 0.6, "0.5 is too low for barber")
+        else // e.g. a scripted equip in a cutscene or at the barber
         {
-            ds.SetScabbards();
+            SetScabbardsWhenReady();
         }
     }
 }
@@ -639,7 +671,7 @@ function OnAppearanceChanged()
 
     if (thePlayer.IsDynamicScabbardsEnabled())
     {
-        thePlayer.ds.SetScabbards(); // experiment: no delay (was AddTimer 0.2, "0.1 is too low after loading a game or after ciri")
+        thePlayer.SetScabbardsWhenReady();
     }
 
     return result;
@@ -655,7 +687,7 @@ function OnBlockingSceneEnded(optional output : CStorySceneOutput)
 
     if (this == thePlayer && IsDynamicScabbardsEnabled())
     {
-        ds.SetScabbards(); // experiment: no delay (was AddTimer 0.5)
+        SetScabbardsWhenReady();
     }
 
     return result;
