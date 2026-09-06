@@ -151,6 +151,7 @@ class DynamicScabbards
         }
     }
 
+    // finds our scabbard by item name
     function FindDynamicScabbard(category : name, item_name : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
@@ -171,7 +172,7 @@ class DynamicScabbards
         return GetInvalidUniqueId();
     }
 
-    // removes DS scabbards of the category; the first one named keep_item_name (if given) stays
+    // removes our scabbards from the category, except one named keep_item_name
     function RemoveDynamicScabbards(category : name, optional keep_item_name : name)
     {
         var inv : CInventoryComponent;
@@ -204,7 +205,7 @@ class DynamicScabbards
         }
     }
 
-    // adds the DS scabbard if it is not in the inventory yet and makes sure it is mounted
+    // adds our scabbard if it is missing and mounts it
     function MountDynamicScabbard(category : name, item_name : name) : bool
     {
         var inv : CInventoryComponent;
@@ -235,7 +236,7 @@ class DynamicScabbards
         return true;
     }
 
-    // unmounts the mounted vanilla scabbard of the category and returns it (invalid id if there was none)
+    // unmounts the vanilla scabbard and returns it
     function UnmountVanillaScabbard(category : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
@@ -588,7 +589,7 @@ public function InitDynamicScabbards()
     }
 }
 
-// initializes the mod on first use, then reports whether it is enabled in the settings
+// creates the mod instance if needed and returns whether the mod is enabled
 @addMethod(CR4Player)
 function IsDynamicScabbardsEnabled() : bool
 {
@@ -652,7 +653,7 @@ function OnAppearanceChanged()
 }
 
 /*
-// cutscenes can re-mount the sword and with it its vanilla scabbard (e.g. after the Ciri sequence)
+// after a cutscene the engine can mount the vanilla scabbard again
 @wrapMethod(CR4Player)
 function OnBlockingSceneEnded(optional output : CStorySceneOutput)
 {
