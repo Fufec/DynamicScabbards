@@ -1,3 +1,21 @@
+// ============================================================================
+// Dynamic Scabbards - EXPERIMENTAL item-swap branch
+//
+// Instead of hiding the vanilla scabbard entity and gluing an extra appearance
+// template onto Geralt, this version swaps the scabbard ITEM in the inventory:
+//   - the vanilla scabbard bound to the equipped sword gets unmounted (never
+//     deleted, so it can always be restored),
+//   - a vanilla-defined school scabbard item (e.g. 'scabbard_steel_bear_01')
+//     is added, tagged 'DS_Scabbard' and mounted.
+// Because the mounted scabbard item now really is the school scabbard, any mod
+// that reads the scabbard through the inventory (Swords and Meditation,
+// Swords on Hip, ...) picks up the correct entity path automatically.
+//
+// The vanilla scabbard that was unmounted is remembered as an item tag on the
+// sword itself (tag == scabbard item name) so it can be re-mounted when the
+// mod is disabled or the witcher set is taken off.
+// ============================================================================
+
 enum DSSchoolSet
 {
     DS_Set_KaerMorhen,
@@ -17,14 +35,6 @@ class DynamicScabbards
 
     var update_pending : bool; // true if a sword or an armor has been changed/unequipped
     default update_pending = false;
-
-    // used as cache for holding the current values for unloading the templates when the player no longer has full set
-    var current_steel_template : CEntityTemplate;
-    var current_silver_template : CEntityTemplate;
-
-    // timer delay for hiding/showing vanilla scabbards to ensure entity is loaded
-    var scabbard_hide_delay : float;
-    default scabbard_hide_delay = 0.01;
 
     public function SetEnabled(value : bool) 
     { 
@@ -118,27 +128,8 @@ class DynamicScabbards
         return false;
     }
 
-    function IncludeScabbardTemplate(scabbard : CEntityTemplate)
-    {
-        var component : CComponent;
-        component = thePlayer.GetComponentByClassName('CAppearanceComponent');
-        
-        ((CAppearanceComponent)component).IncludeAppearanceTemplate(scabbard);	
-    }
-
-    function ExcludeScabbardTemplate(scabbard : CEntityTemplate)
-    {
-        var component : CComponent;
-        component = thePlayer.GetComponentByClassName('CAppearanceComponent');
-
-        ((CAppearanceComponent)component).ExcludeAppearanceTemplate(scabbard);
-    }
-
-    function CreateTemplate(path : string) : CEntityTemplate
-    {
-        return (CEntityTemplate)LoadResource(path, true);
-    }
-
+    // Entity paths are kept as public API for patches (e.g. DS_SOH spawns copies from these paths).
+    // They match the equip_template of the items returned by GetSteelScabbardItem / GetSilverScabbardItem.
     public function GetSilverScabbardPath(school: DSSchoolSet) : string
     {
         switch (school)
@@ -171,62 +162,215 @@ class DynamicScabbards
         }
     }
 
-    function LoadSteelScabbard(sword_steel : SItemUniqueId, school: DSSchoolSet)
+    // Vanilla item definitions (category silver_scabbards / steel_scabbards):
+    //   content0  _technical_items_defs.xml : scabbard_*_1_01, scabbard_*_1_02, scabbard_silver_1_05, scabbard_*_bear_01, scabbard_*_lynx_01, scabbard_*_gryphon_01
+    //   dlc10     dlc10_wolf_swords.xml     : scabbard_*_wolf_01
+    //   content0  dlc18_netflix_swords.xml  : scabbard_*_netflix_01
+    public function GetSilverScabbardItem(school: DSSchoolSet) : name
     {
-        UnloadSteelScabbard();
-
-        if(!thePlayer.GetInventory().IsItemSteelSwordUsableByPlayer(sword_steel)) 
+        switch (school)
         {
-            return;
+            case DS_Set_KaerMorhen:        return 'scabbard_silver_1_01';
+            case DS_Set_Bear:              return 'scabbard_silver_bear_01';
+            case DS_Set_Cat:               return 'scabbard_silver_lynx_01';
+            case DS_Set_Griffin:           return 'scabbard_silver_gryphon_01';
+            case DS_Set_Manticore:
+            case DS_Set_Wolf:              return 'scabbard_silver_wolf_01';
+            case DS_Set_Viper:             return 'scabbard_silver_1_05';
+            case DS_Set_ForgottenWolf:     return 'scabbard_silver_netflix_01';
+            default:                       return '';
         }
-
-        if (IsSteelException(sword_steel))
-        {
-            return;
-        }
-
-        current_steel_template = CreateTemplate(GetSteelScabbardPath(school));
-        IncludeScabbardTemplate(current_steel_template);
-
-        thePlayer.AddTimer('HideVanillaSteelScabbard', scabbard_hide_delay, false);
     }
 
-    function LoadSilverScabbard(sword_silver : SItemUniqueId, school: DSSchoolSet)
+    public function GetSteelScabbardItem(school: DSSchoolSet) : name
     {
-        UnloadSilverScabbard();
-
-        if(!thePlayer.GetInventory().IsItemSilverSwordUsableByPlayer(sword_silver)) 
+        switch (school)
         {
-            return;
+            case DS_Set_KaerMorhen:        return 'scabbard_steel_1_01';
+            case DS_Set_Bear:              return 'scabbard_steel_bear_01';
+            case DS_Set_Cat:               return 'scabbard_steel_lynx_01';
+            case DS_Set_Griffin:           return 'scabbard_steel_gryphon_01';
+            case DS_Set_Manticore:
+            case DS_Set_Wolf:              return 'scabbard_steel_wolf_01';
+            case DS_Set_Viper:             return 'scabbard_steel_1_02';
+            case DS_Set_ForgottenWolf:     return 'scabbard_steel_netflix_01';
+            default:                       return '';
         }
-
-        if (IsSilverException(sword_silver))
-        {
-            return;
-        }
-
-        current_silver_template = CreateTemplate(GetSilverScabbardPath(school));
-        IncludeScabbardTemplate(current_silver_template);
-
-        thePlayer.AddTimer('HideVanillaSilverScabbard', scabbard_hide_delay, false);
     }
 
+    // Tag marking scabbard items created by this mod. Vanilla (sword-bound) scabbards never carry it.
+    public function GetDSItemTag() : name
+    {
+        return 'DS_Scabbard';
+    }
+
+    function IsDSScabbard(inv : CInventoryComponent, item : SItemUniqueId) : bool
+    {
+        return inv.ItemHasTag(item, GetDSItemTag());
+    }
+
+    function RemoveDSScabbard(inv : CInventoryComponent, item : SItemUniqueId)
+    {
+        if (inv.IsItemMounted(item))
+        {
+            inv.UnmountItem(item, true);
+        }
+
+        inv.RemoveItem(item, 1);
+    }
+
+    // The sword remembers which vanilla scabbard it had mounted before DS replaced it.
+    // Stored as an item tag equal to the scabbard item name; item tags persist in save files.
+    function RememberVanillaScabbard(inv : CInventoryComponent, sword : SItemUniqueId, scabbard : name)
+    {
+        if (!inv.ItemHasTag(sword, scabbard))
+        {
+            inv.AddItemTag(sword, scabbard);
+        }
+    }
+
+    // Re-mount the vanilla scabbard belonging to the equipped sword (used when the mod is disabled,
+    // the witcher set is taken off, or the sword is an exception).
+    function RestoreVanillaScabbard(inv : CInventoryComponent, category : name, sword : SItemUniqueId)
+    {
+        var ids : array<SItemUniqueId>;
+        var sword_tags : array<name>;
+        var entity : CEntity;
+        var i : int;
+        var candidates : int;
+        var last_candidate : SItemUniqueId;
+
+        ids = inv.GetItemsByCategory(category);
+        candidates = 0;
+
+        // something vanilla is already mounted - just make sure it is not left hidden by the old DS mechanism
+        for (i = 0; i < ids.Size(); i += 1)
+        {
+            if (!IsDSScabbard(inv, ids[i]))
+            {
+                if (inv.IsItemMounted(ids[i]))
+                {
+                    entity = inv.GetItemEntityUnsafe(ids[i]);
+                    if (entity)
+                    {
+                        entity.SetHideInGame(false);
+                    }
+                    return;
+                }
+
+                candidates += 1;
+                last_candidate = ids[i];
+            }
+        }
+
+        if (candidates == 0)
+        {
+            return;
+        }
+
+        // preferred: the scabbard this sword had before DS unmounted it
+        inv.GetItemTags(sword, sword_tags);
+
+        for (i = 0; i < ids.Size(); i += 1)
+        {
+            if (!IsDSScabbard(inv, ids[i]) && sword_tags.Contains(inv.GetItemName(ids[i])))
+            {
+                inv.MountItem(ids[i]);
+                LogChannel('DynamicScabbards', "Restored vanilla scabbard " + NameToString(inv.GetItemName(ids[i])));
+                return;
+            }
+        }
+
+        // fallback: only one vanilla scabbard of this category exists, so it must be the right one
+        if (candidates == 1)
+        {
+            inv.MountItem(last_candidate);
+            LogChannel('DynamicScabbards', "Restored vanilla scabbard (single candidate) " + NameToString(inv.GetItemName(last_candidate)));
+            return;
+        }
+
+        LogChannel('DynamicScabbards', "Could not determine vanilla scabbard for " + NameToString(category) + ", re-equip the sword to restore it");
+    }
+
+    // Core of the item swap. Ensures that for the given category:
+    //   - exactly one DS scabbard named 'desired' exists and is mounted (when desired is set),
+    //   - no other DS scabbards linger,
+    //   - the vanilla scabbard is unmounted while a DS one is active, and restored otherwise.
+    function ApplyScabbard(category : name, has_sword : bool, sword : SItemUniqueId, desired : name)
+    {
+        var inv : CInventoryComponent;
+        var ids : array<SItemUniqueId>;
+        var new_ids : array<SItemUniqueId>;
+        var i : int;
+        var keep_found : bool;
+        var want_ds : bool;
+
+        inv = thePlayer.GetInventory();
+        ids = inv.GetItemsByCategory(category);
+        keep_found = false;
+        want_ds = IsNameValid(desired);
+
+        for (i = 0; i < ids.Size(); i += 1)
+        {
+            if (IsDSScabbard(inv, ids[i]))
+            {
+                if (want_ds && !keep_found && inv.GetItemName(ids[i]) == desired)
+                {
+                    keep_found = true;
+
+                    if (!inv.IsItemMounted(ids[i]))
+                    {
+                        inv.MountItem(ids[i]);
+                    }
+                }
+                else
+                {
+                    RemoveDSScabbard(inv, ids[i]);
+                }
+            }
+            else if (want_ds && inv.IsItemMounted(ids[i]))
+            {
+                // vanilla scabbard bound to the sword: hide it by unmounting, remember it for later restore
+                if (has_sword)
+                {
+                    RememberVanillaScabbard(inv, sword, inv.GetItemName(ids[i]));
+                }
+
+                inv.UnmountItem(ids[i], true);
+            }
+        }
+
+        if (want_ds && !keep_found)
+        {
+            new_ids = inv.AddAnItem(desired, 1, true, true);
+
+            if (new_ids.Size() > 0)
+            {
+                inv.AddItemTag(new_ids[0], GetDSItemTag());
+                inv.MountItem(new_ids[0]);
+                LogChannel('DynamicScabbards', "Mounted " + NameToString(desired));
+            }
+            else
+            {
+                LogChannel('DynamicScabbards', "Failed to add scabbard item " + NameToString(desired));
+            }
+        }
+
+        if (!want_ds && has_sword)
+        {
+            RestoreVanillaScabbard(inv, category, sword);
+        }
+    }
+
+    // Removes the DS scabbard of the category without touching vanilla ones (no sword equipped).
     public function UnloadSteelScabbard()
     {
-        if (current_steel_template)
-        {
-            ExcludeScabbardTemplate(current_steel_template);
-            current_steel_template = NULL;
-        }
+        ApplyScabbard('steel_scabbards', false, GetInvalidUniqueId(), '');
     }
 
     public function UnloadSilverScabbard()
     {
-        if (current_silver_template)
-        {
-            ExcludeScabbardTemplate(current_silver_template);
-            current_silver_template = NULL;
-        }
+        ApplyScabbard('silver_scabbards', false, GetInvalidUniqueId(), '');
     }
 
     public function UnloadScabbards()
@@ -235,16 +379,33 @@ class DynamicScabbards
         UnloadSilverScabbard();
     }
 
+    // Removes the DS scabbard and re-mounts the vanilla one of the equipped sword.
     public function UnloadSteelScabbardAndRestoreVanilla()
     {
-        UnloadSteelScabbard();
-        thePlayer.AddTimer('ShowVanillaSteelScabbard', scabbard_hide_delay, false);
+        var sword_steel : SItemUniqueId;
+
+        if (GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
+        {
+            ApplyScabbard('steel_scabbards', true, sword_steel, '');
+        }
+        else
+        {
+            UnloadSteelScabbard();
+        }
     }
 
     public function UnloadSilverScabbardAndRestoreVanilla()
     {
-        UnloadSilverScabbard();
-        thePlayer.AddTimer('ShowVanillaSilverScabbard', scabbard_hide_delay, false);
+        var sword_silver : SItemUniqueId;
+
+        if (GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
+        {
+            ApplyScabbard('silver_scabbards', true, sword_silver, '');
+        }
+        else
+        {
+            UnloadSilverScabbard();
+        }
     }
 
     public function UnloadScabbardsAndRestoreVanilla()
@@ -256,28 +417,44 @@ class DynamicScabbards
     public function UpdateSteelScabbard(school: DSSchoolSet)
     {
         var sword_steel : SItemUniqueId;
+        var desired : name;
 
-        if(GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
+        if (GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
         {
-            LoadSteelScabbard(sword_steel, school);
+            desired = '';
+
+            if (thePlayer.GetInventory().IsItemSteelSwordUsableByPlayer(sword_steel) && !IsSteelException(sword_steel))
+            {
+                desired = GetSteelScabbardItem(school);
+            }
+
+            ApplyScabbard('steel_scabbards', true, sword_steel, desired);
         }
         else
         {
-            UnloadSteelScabbardAndRestoreVanilla();
+            UnloadSteelScabbard();
         }
     }
 
     public function UpdateSilverScabbard(school: DSSchoolSet)
     {
         var sword_silver : SItemUniqueId;
+        var desired : name;
 
-        if(GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
-        { 
-            LoadSilverScabbard(sword_silver, school);
+        if (GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
+        {
+            desired = '';
+
+            if (thePlayer.GetInventory().IsItemSilverSwordUsableByPlayer(sword_silver) && !IsSilverException(sword_silver))
+            {
+                desired = GetSilverScabbardItem(school);
+            }
+
+            ApplyScabbard('silver_scabbards', true, sword_silver, desired);
         }
         else
         {
-            UnloadSilverScabbardAndRestoreVanilla();
+            UnloadSilverScabbard();
         }
     }
 
@@ -352,33 +529,6 @@ class DynamicScabbards
         return false;
     }
 
-    public function SetVanillaScabbardsHidden(category : name, hide : bool)
-    {
-        var inv : CInventoryComponent;
-        var ids : array<SItemUniqueId>;
-        var size : int;
-        var i    : int;
-        var entity  : CEntity;
-        
-        inv = thePlayer.GetInventory();
-        ids = inv.GetItemsByCategory(category);
-        size = ids.Size();
-
-        if (size == 0)
-        {
-            return;
-        }
-
-        for (i = 0; i < size; i += 1)
-        {
-            entity = inv.GetItemEntityUnsafe(ids[i]);
-            if (entity)
-            {
-                entity.SetHideInGame(hide);
-            }
-        }
-    }
-
     // Determine which slots trigger scabbard updates based on mode
     public function IsSwordOrArmorSlot(slot : EEquipmentSlots) : bool
     {
@@ -401,6 +551,12 @@ class DynamicScabbards
     public function SetScabbards()
     {   
         var school : DSSchoolSet;
+
+        // thePlayer is not Geralt (e.g. Ciri sequence) - the inventory we would touch is not his
+        if (!GetWitcherPlayer())
+        {
+            return;
+        }
 
         if (!enabled)
         {
@@ -486,31 +642,6 @@ function EnsureDSInitializedAndEnabled() : bool
     }
     
     return true;
-}
-
-// we need timer functions to delay the call to hide/show vanilla scabbards, otherwise the entity it will try to target won't be loaded yet
-@addMethod(CR4Player)
-timer function HideVanillaSteelScabbard(dt : float, id : int)
-{
-    ds.SetVanillaScabbardsHidden('steel_scabbards', true);
-}
-
-@addMethod(CR4Player)
-timer function HideVanillaSilverScabbard(dt : float, id : int)
-{
-    ds.SetVanillaScabbardsHidden('silver_scabbards', true);
-}
-
-@addMethod(CR4Player)
-timer function ShowVanillaSteelScabbard(dt : float, id : int)
-{
-    ds.SetVanillaScabbardsHidden('steel_scabbards', false);
-}
-
-@addMethod(CR4Player)
-timer function ShowVanillaSilverScabbard(dt : float, id : int)
-{
-    ds.SetVanillaScabbardsHidden('silver_scabbards', false);
 }
 
 @addMethod(CR4Player)
