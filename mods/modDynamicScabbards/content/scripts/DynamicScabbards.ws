@@ -151,10 +151,6 @@ class DynamicScabbards
         }
     }
 
-    // ------------------------------------------------------------------
-    // Inventory helpers
-    // ------------------------------------------------------------------
-
     function FindDSScabbard(category : name, item_name : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
@@ -283,10 +279,6 @@ class DynamicScabbards
         return false;
     }
 
-    // ------------------------------------------------------------------
-    // Steel
-    // ------------------------------------------------------------------
-
     function LoadSteelScabbard(sword_steel : SItemUniqueId, school : DSSchoolSet)
     {
         var scabbard_name : name;
@@ -299,7 +291,6 @@ class DynamicScabbards
         }
 
         scabbard_name = GetSteelScabbardItemName(school);
-
         RemoveDSScabbards('steel_scabbards', scabbard_name);
 
         vanilla = UnmountVanillaScabbard('steel_scabbards');
@@ -358,10 +349,6 @@ class DynamicScabbards
         }
     }
 
-    // ------------------------------------------------------------------
-    // Silver
-    // ------------------------------------------------------------------
-
     function LoadSilverScabbard(sword_silver : SItemUniqueId, school : DSSchoolSet)
     {
         var scabbard_name : name;
@@ -374,7 +361,6 @@ class DynamicScabbards
         }
 
         scabbard_name = GetSilverScabbardItemName(school);
-
         RemoveDSScabbards('silver_scabbards', scabbard_name);
 
         vanilla = UnmountVanillaScabbard('silver_scabbards');
@@ -431,12 +417,6 @@ class DynamicScabbards
         {
             UnloadSilverScabbard();
         }
-    }
-
-    public function UnloadScabbards()
-    {
-        UnloadSteelScabbard();
-        UnloadSilverScabbard();
     }
 
     public function RestoreVanillaScabbards()
