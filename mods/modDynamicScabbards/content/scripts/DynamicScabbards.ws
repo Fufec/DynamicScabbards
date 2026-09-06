@@ -617,9 +617,9 @@ function HandleScabbardUpdate(slot : EEquipmentSlots)
                 ds.SetPendingUpdate(true);
             }
         }
-        else // we're for example in cutscene or at barber, delay the call
+        else // experiment: no delay (was AddTimer 0.6, "0.5 is too low for barber")
         {
-            AddTimer('SetScabbardsDelayed', 0.6, false); // note: 0.5 is too low for barber
+            ds.SetScabbards();
         }
     }
 }
@@ -639,13 +639,12 @@ function OnAppearanceChanged()
 
     if (thePlayer.IsDynamicScabbardsEnabled())
     {
-        thePlayer.AddTimer('SetScabbardsDelayed', 0.2, false); // note: 0.1 is too low after loading a game (or after ciri sequence)
+        thePlayer.ds.SetScabbards(); // experiment: no delay (was AddTimer 0.2, "0.1 is too low after loading a game or after ciri")
     }
 
     return result;
 }
 
-/*
 // after a cutscene the engine can mount the vanilla scabbard again
 @wrapMethod(CR4Player)
 function OnBlockingSceneEnded(optional output : CStorySceneOutput)
@@ -656,12 +655,12 @@ function OnBlockingSceneEnded(optional output : CStorySceneOutput)
 
     if (this == thePlayer && IsDynamicScabbardsEnabled())
     {
-        AddTimer('SetScabbardsDelayed', 0.5, false);
+        ds.SetScabbards(); // experiment: no delay (was AddTimer 0.5)
     }
 
     return result;
 }
-*/
+
 @wrapMethod(W3PlayerWitcher)
 function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, ignoreMounting : bool, optional toHand : bool) : bool
 {
