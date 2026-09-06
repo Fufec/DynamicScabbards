@@ -238,23 +238,23 @@ class DynamicScabbards
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
-        var vanilla : SItemUniqueId;
+        var vanilla_scabbard : SItemUniqueId;
         var i : int;
 
         inv = thePlayer.GetInventory();
         ids = inv.GetItemsByCategory(category);
-        vanilla = GetInvalidUniqueId();
+        vanilla_scabbard = GetInvalidUniqueId();
 
         for (i = 0; i < ids.Size(); i += 1)
         {
             if (!inv.ItemHasTag(ids[i], GetDynamicScabbardTag()) && inv.IsItemMounted(ids[i]))
             {
                 inv.UnmountItem(ids[i], true);
-                vanilla = ids[i];
+                vanilla_scabbard = ids[i];
             }
         }
 
-        return vanilla;
+        return vanilla_scabbard;
     }
 
     // if the engine already mounted a vanilla scabbard (e.g. for an excluded sword), there is nothing to restore
@@ -281,7 +281,7 @@ class DynamicScabbards
     function LoadSteelScabbard(sword_steel : SItemUniqueId, school : DSSchoolSet)
     {
         var scabbard_name : name;
-        var vanilla : SItemUniqueId;
+        var vanilla_scabbard : SItemUniqueId;
 
         if (!thePlayer.GetInventory().IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(sword_steel))
         {
@@ -291,10 +291,10 @@ class DynamicScabbards
 
         scabbard_name = GetSteelScabbardItemName(school);
 
-        vanilla = UnmountVanillaScabbard('steel_scabbards');
-        if (thePlayer.GetInventory().IsIdValid(vanilla))
+        vanilla_scabbard = UnmountVanillaScabbard('steel_scabbards');
+        if (thePlayer.GetInventory().IsIdValid(vanilla_scabbard))
         {
-            unmounted_vanilla_steel = vanilla;
+            unmounted_vanilla_steel = vanilla_scabbard;
         }
 
         if (!MountDynamicScabbard('steel_scabbards', scabbard_name))
@@ -311,10 +311,10 @@ class DynamicScabbards
 
     public function RestoreVanillaSteelScabbard()
     {
-        var vanilla : SItemUniqueId;
+        var vanilla_scabbard : SItemUniqueId;
         var sword_steel : SItemUniqueId;
 
-        vanilla = unmounted_vanilla_steel;
+        vanilla_scabbard = unmounted_vanilla_steel;
         UnloadSteelScabbard();
 
         if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
@@ -327,9 +327,9 @@ class DynamicScabbards
             return;
         }
 
-        if (thePlayer.GetInventory().IsIdValid(vanilla))
+        if (thePlayer.GetInventory().IsIdValid(vanilla_scabbard))
         {
-            thePlayer.GetInventory().MountItem(vanilla);
+            thePlayer.GetInventory().MountItem(vanilla_scabbard);
         }
     }
 
@@ -350,7 +350,7 @@ class DynamicScabbards
     function LoadSilverScabbard(sword_silver : SItemUniqueId, school : DSSchoolSet)
     {
         var scabbard_name : name;
-        var vanilla : SItemUniqueId;
+        var vanilla_scabbard : SItemUniqueId;
 
         if (!thePlayer.GetInventory().IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(sword_silver))
         {
@@ -360,10 +360,10 @@ class DynamicScabbards
 
         scabbard_name = GetSilverScabbardItemName(school);
 
-        vanilla = UnmountVanillaScabbard('silver_scabbards');
-        if (thePlayer.GetInventory().IsIdValid(vanilla))
+        vanilla_scabbard = UnmountVanillaScabbard('silver_scabbards');
+        if (thePlayer.GetInventory().IsIdValid(vanilla_scabbard))
         {
-            unmounted_vanilla_silver = vanilla;
+            unmounted_vanilla_silver = vanilla_scabbard;
         }
 
         if (!MountDynamicScabbard('silver_scabbards', scabbard_name))
@@ -380,10 +380,10 @@ class DynamicScabbards
 
     public function RestoreVanillaSilverScabbard()
     {
-        var vanilla : SItemUniqueId;
+        var vanilla_scabbard : SItemUniqueId;
         var sword_silver : SItemUniqueId;
 
-        vanilla = unmounted_vanilla_silver;
+        vanilla_scabbard = unmounted_vanilla_silver;
         UnloadSilverScabbard();
 
         if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
@@ -396,9 +396,9 @@ class DynamicScabbards
             return;
         }
 
-        if (thePlayer.GetInventory().IsIdValid(vanilla))
+        if (thePlayer.GetInventory().IsIdValid(vanilla_scabbard))
         {
-            thePlayer.GetInventory().MountItem(vanilla);
+            thePlayer.GetInventory().MountItem(vanilla_scabbard);
         }
     }
 
