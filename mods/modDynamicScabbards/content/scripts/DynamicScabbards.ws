@@ -151,151 +151,298 @@ class DynamicScabbards
         }
     }
 
-    // Which scabbard item DS wants mounted for the sword in the given slot; '' means "leave vanilla"
-    function GetScabbardToMount(slot : EEquipmentSlots, school : DSSchoolSet) : name
-    {
-        var inv : CInventoryComponent;
-        var sword : SItemUniqueId;
+    // ------------------------------------------------------------------
+    // Inventory helpers
+    // ------------------------------------------------------------------
 
-        if (!GetWitcherPlayer().GetItemEquippedOnSlot(slot, sword))
-        {
-            return '';
-        }
-
-        inv = thePlayer.GetInventory();
-
-        if (slot == EES_SteelSword)
-        {
-            if (!inv.IsItemSteelSwordUsableByPlayer(sword) || IsExcludedSteelSword(sword))
-            {
-                return '';
-            }
-            return GetSteelScabbardItemName(school);
-        }
-
-        if (!inv.IsItemSilverSwordUsableByPlayer(sword) || IsExcludedSilverSword(sword))
-        {
-            return '';
-        }
-
-        return GetSilverScabbardItemName(school);
-    }
-
-    function RememberVanilla(slot : EEquipmentSlots, item : SItemUniqueId)
-    {
-        if (slot == EES_SteelSword) 
-        {
-            unmounted_vanilla_steel = item;
-        }
-        else
-        {
-            unmounted_vanilla_silver = item;
-        }
-    }
-
-    function GetRememberedVanilla(slot : EEquipmentSlots) : SItemUniqueId
-    {
-        if (slot == EES_SteelSword)
-        {
-            return unmounted_vanilla_steel;
-        }
-
-        return unmounted_vanilla_silver;
-    }
-
-    function RemoveDSScabbard(inv : CInventoryComponent, item : SItemUniqueId)
-    {
-        if (inv.IsItemMounted(item))
-        {
-            inv.UnmountItem(item, true);
-        }
-
-        inv.RemoveItem(item, 1);
-    }
-
-    function GetScabbardCategory(slot : EEquipmentSlots) : name
-    {
-        if (slot == EES_SteelSword) { return 'steel_scabbards'; }
-        return 'silver_scabbards';
-    }
-
-    function SetScabbardForSlot(slot : EEquipmentSlots, scabbard_to_mount : name)
+    function FindDSScabbard(category : name, item_name : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
-        var new_ids : array<SItemUniqueId>;
-        var sword, ds_item, vanilla : SItemUniqueId;
-        var has_sword, swap_wanted, ds_found, vanilla_mounted : bool;
         var i : int;
 
         inv = thePlayer.GetInventory();
-        has_sword = GetWitcherPlayer().GetItemEquippedOnSlot(slot, sword);
-        swap_wanted = IsNameValid(scabbard_to_mount);
-        ids = inv.GetItemsByCategory(GetScabbardCategory(slot));
+        ids = inv.GetItemsByCategory(category);
 
         for (i = 0; i < ids.Size(); i += 1)
         {
-            if (inv.ItemHasTag(ids[i], GetDSItemTag()))
+            if (inv.ItemHasTag(ids[i], GetDSItemTag()) && inv.GetItemName(ids[i]) == item_name)
             {
-                if (swap_wanted && !ds_found && inv.GetItemName(ids[i]) == scabbard_to_mount)
-                {
-                    ds_found = true;
-                    ds_item = ids[i];
-                }
-                else
-                {
-                    RemoveDSScabbard(inv, ids[i]);
-                }
-            }
-            else if (inv.IsItemMounted(ids[i]))
-            {
-                if (swap_wanted)
-                {
-                    RememberVanilla(slot, ids[i]);
-                    inv.UnmountItem(ids[i], true);
-                }
-                else
-                {
-                    vanilla_mounted = true;
-                }
+                return ids[i];
             }
         }
 
-        if (swap_wanted)
+        return GetInvalidUniqueId();
+    }
+
+    // removes DS scabbards of the category; the first one named 'keep' (if given) stays
+    function RemoveDSScabbards(category : name, optional keep : name)
+    {
+        var inv : CInventoryComponent;
+        var ids : array<SItemUniqueId>;
+        var kept : bool;
+        var i : int;
+
+        inv = thePlayer.GetInventory();
+        ids = inv.GetItemsByCategory(category);
+
+        for (i = 0; i < ids.Size(); i += 1)
         {
-            if (!ds_found)
+            if (!inv.ItemHasTag(ids[i], GetDSItemTag()))
             {
-                new_ids = inv.AddAnItem(scabbard_to_mount, 1, true, true);
-                if (new_ids.Size() == 0)
-                {
-                    LogChannel('DynamicScabbards', "Failed to add scabbard item " + NameToString(scabbard_to_mount));
-                    return;
-                }
-                ds_item = new_ids[0];
-                inv.AddItemTag(ds_item, GetDSItemTag());
+                continue;
             }
 
-            if (!inv.IsItemMounted(ds_item))
+            if (!kept && IsNameValid(keep) && inv.GetItemName(ids[i]) == keep)
             {
-                inv.MountItem(ds_item);
+                kept = true;
+                continue;
             }
+
+            if (inv.IsItemMounted(ids[i]))
+            {
+                inv.UnmountItem(ids[i], true);
+            }
+
+            inv.RemoveItem(ids[i], 1);
+        }
+    }
+
+    // adds the DS scabbard if it is not in the inventory yet and makes sure it is mounted
+    function MountDSScabbard(category : name, item_name : name) : bool
+    {
+        var inv : CInventoryComponent;
+        var ids : array<SItemUniqueId>;
+        var scabbard : SItemUniqueId;
+
+        inv = thePlayer.GetInventory();
+        scabbard = FindDSScabbard(category, item_name);
+
+        if (!inv.IsIdValid(scabbard))
+        {
+            ids = inv.AddAnItem(item_name, 1, true, true);
+
+            if (ids.Size() == 0)
+            {
+                return false; // item definition missing (e.g. dlc10 not installed)
+            }
+
+            scabbard = ids[0];
+            inv.AddItemTag(scabbard, GetDSItemTag());
+        }
+
+        if (!inv.IsItemMounted(scabbard))
+        {
+            inv.MountItem(scabbard);
+        }
+
+        return true;
+    }
+
+    // unmounts the mounted vanilla scabbard of the category and returns it (invalid id if there was none)
+    function UnmountVanillaScabbard(category : name) : SItemUniqueId
+    {
+        var inv : CInventoryComponent;
+        var ids : array<SItemUniqueId>;
+        var vanilla : SItemUniqueId;
+        var i : int;
+
+        inv = thePlayer.GetInventory();
+        ids = inv.GetItemsByCategory(category);
+        vanilla = GetInvalidUniqueId();
+
+        for (i = 0; i < ids.Size(); i += 1)
+        {
+            if (!inv.ItemHasTag(ids[i], GetDSItemTag()) && inv.IsItemMounted(ids[i]))
+            {
+                inv.UnmountItem(ids[i], true);
+                vanilla = ids[i];
+            }
+        }
+
+        return vanilla;
+    }
+
+    function IsVanillaScabbardMounted(category : name) : bool
+    {
+        var inv : CInventoryComponent;
+        var ids : array<SItemUniqueId>;
+        var i : int;
+
+        inv = thePlayer.GetInventory();
+        ids = inv.GetItemsByCategory(category);
+
+        for (i = 0; i < ids.Size(); i += 1)
+        {
+            if (!inv.ItemHasTag(ids[i], GetDSItemTag()) && inv.IsItemMounted(ids[i]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // ------------------------------------------------------------------
+    // Steel
+    // ------------------------------------------------------------------
+
+    function LoadSteelScabbard(sword_steel : SItemUniqueId, school : DSSchoolSet)
+    {
+        var scabbard_name : name;
+        var vanilla : SItemUniqueId;
+
+        if (!thePlayer.GetInventory().IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(sword_steel))
+        {
+            RestoreVanillaSteelScabbard();
             return;
         }
 
-        // DS lets go of this category
-        vanilla = GetRememberedVanilla(slot);
-        RememberVanilla(slot, GetInvalidUniqueId());
+        scabbard_name = GetSteelScabbardItemName(school);
 
-        if (has_sword && !vanilla_mounted && inv.IsIdValid(vanilla))
+        RemoveDSScabbards('steel_scabbards', scabbard_name);
+
+        vanilla = UnmountVanillaScabbard('steel_scabbards');
+        if (thePlayer.GetInventory().IsIdValid(vanilla))
         {
-            inv.MountItem(vanilla);
+            unmounted_vanilla_steel = vanilla;
         }
+
+        if (!MountDSScabbard('steel_scabbards', scabbard_name))
+        {
+            RestoreVanillaSteelScabbard();
+        }
+    }
+
+    public function UnloadSteelScabbard()
+    {
+        RemoveDSScabbards('steel_scabbards');
+        unmounted_vanilla_steel = GetInvalidUniqueId();
+    }
+
+    public function RestoreVanillaSteelScabbard()
+    {
+        var vanilla : SItemUniqueId;
+        var sword_steel : SItemUniqueId;
+
+        vanilla = unmounted_vanilla_steel;
+        UnloadSteelScabbard();
+
+        if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
+        {
+            return;
+        }
+
+        if (IsVanillaScabbardMounted('steel_scabbards'))
+        {
+            return;
+        }
+
+        if (thePlayer.GetInventory().IsIdValid(vanilla))
+        {
+            thePlayer.GetInventory().MountItem(vanilla);
+        }
+    }
+
+    public function UpdateSteelScabbard(school : DSSchoolSet)
+    {
+        var sword_steel : SItemUniqueId;
+
+        if (GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
+        {
+            LoadSteelScabbard(sword_steel, school);
+        }
+        else
+        {
+            UnloadSteelScabbard();
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Silver
+    // ------------------------------------------------------------------
+
+    function LoadSilverScabbard(sword_silver : SItemUniqueId, school : DSSchoolSet)
+    {
+        var scabbard_name : name;
+        var vanilla : SItemUniqueId;
+
+        if (!thePlayer.GetInventory().IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(sword_silver))
+        {
+            RestoreVanillaSilverScabbard();
+            return;
+        }
+
+        scabbard_name = GetSilverScabbardItemName(school);
+
+        RemoveDSScabbards('silver_scabbards', scabbard_name);
+
+        vanilla = UnmountVanillaScabbard('silver_scabbards');
+        if (thePlayer.GetInventory().IsIdValid(vanilla))
+        {
+            unmounted_vanilla_silver = vanilla;
+        }
+
+        if (!MountDSScabbard('silver_scabbards', scabbard_name))
+        {
+            RestoreVanillaSilverScabbard();
+        }
+    }
+
+    public function UnloadSilverScabbard()
+    {
+        RemoveDSScabbards('silver_scabbards');
+        unmounted_vanilla_silver = GetInvalidUniqueId();
+    }
+
+    public function RestoreVanillaSilverScabbard()
+    {
+        var vanilla : SItemUniqueId;
+        var sword_silver : SItemUniqueId;
+
+        vanilla = unmounted_vanilla_silver;
+        UnloadSilverScabbard();
+
+        if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
+        {
+            return;
+        }
+
+        if (IsVanillaScabbardMounted('silver_scabbards'))
+        {
+            return;
+        }
+
+        if (thePlayer.GetInventory().IsIdValid(vanilla))
+        {
+            thePlayer.GetInventory().MountItem(vanilla);
+        }
+    }
+
+    public function UpdateSilverScabbard(school : DSSchoolSet)
+    {
+        var sword_silver : SItemUniqueId;
+
+        if (GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
+        {
+            LoadSilverScabbard(sword_silver, school);
+        }
+        else
+        {
+            UnloadSilverScabbard();
+        }
+    }
+
+    public function UnloadScabbards()
+    {
+        UnloadSteelScabbard();
+        UnloadSilverScabbard();
     }
 
     public function RestoreVanillaScabbards()
     {
-        SetScabbardForSlot(EES_SteelSword,  '');
-        SetScabbardForSlot(EES_SilverSword, '');
+        RestoreVanillaSteelScabbard();
+        RestoreVanillaSilverScabbard();
     }
 
     // Set detection: full-set or chestplate-only mode based on chestplate_mode setting
@@ -392,7 +539,6 @@ class DynamicScabbards
     {
         var school : DSSchoolSet;
 
-        // thePlayer is not Geralt (e.g. Ciri sequence) - the inventory we would touch is not his
         if (!GetWitcherPlayer())
         {
             return;
@@ -404,8 +550,8 @@ class DynamicScabbards
             return;
         }
 
-        SetScabbardForSlot(EES_SteelSword,  GetScabbardToMount(EES_SteelSword, school));
-        SetScabbardForSlot(EES_SilverSword, GetScabbardToMount(EES_SilverSword, school));
+        UpdateSteelScabbard(school);
+        UpdateSilverScabbard(school);
     }
 }
 
@@ -415,8 +561,8 @@ public var ds : DynamicScabbards;
 @addMethod(CR4Player)
 public function InitDS()
 {
-    var currentVersion: string = "2.22";
-    var currentVersionFloat: float = 2.22;
+    var currentVersion: string = "3.00";
+    var currentVersionFloat: float = 3.00;
 
     var enabledValue: string;
     var chestModeValue: string;
@@ -524,6 +670,7 @@ function OnAppearanceChanged()
     return result;
 }
 
+/*
 // cutscenes can re-mount the sword and with it its vanilla scabbard (e.g. after the Ciri sequence)
 @wrapMethod(CR4Player)
 function OnBlockingSceneEnded(optional output : CStorySceneOutput)
@@ -539,7 +686,7 @@ function OnBlockingSceneEnded(optional output : CStorySceneOutput)
 
     return result;
 }
-
+*/
 @wrapMethod(W3PlayerWitcher)
 function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, ignoreMounting : bool, optional toHand : bool) : bool
 {
