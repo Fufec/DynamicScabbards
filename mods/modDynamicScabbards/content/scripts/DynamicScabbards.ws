@@ -47,7 +47,7 @@ class DynamicScabbards
     }
 
     // Tag custom scabbard items created by this mod
-    public function GetDSItemTag() : name
+    public function GetDynamicScabbardTag() : name
     {
         return 'DS_Scabbard';
     }
@@ -151,7 +151,7 @@ class DynamicScabbards
         }
     }
 
-    function FindDSScabbard(category : name, item_name : name) : SItemUniqueId
+    function FindDynamicScabbard(category : name, item_name : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -162,7 +162,7 @@ class DynamicScabbards
 
         for (i = 0; i < ids.Size(); i += 1)
         {
-            if (inv.ItemHasTag(ids[i], GetDSItemTag()) && inv.GetItemName(ids[i]) == item_name)
+            if (inv.ItemHasTag(ids[i], GetDynamicScabbardTag()) && inv.GetItemName(ids[i]) == item_name)
             {
                 return ids[i];
             }
@@ -172,7 +172,7 @@ class DynamicScabbards
     }
 
     // removes DS scabbards of the category; the first one named keep_item_name (if given) stays
-    function RemoveDSScabbards(category : name, optional keep_item_name : name)
+    function RemoveDynamicScabbards(category : name, optional keep_item_name : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -184,7 +184,7 @@ class DynamicScabbards
 
         for (i = 0; i < ids.Size(); i += 1)
         {
-            if (!inv.ItemHasTag(ids[i], GetDSItemTag()))
+            if (!inv.ItemHasTag(ids[i], GetDynamicScabbardTag()))
             {
                 continue;
             }
@@ -205,14 +205,14 @@ class DynamicScabbards
     }
 
     // adds the DS scabbard if it is not in the inventory yet and makes sure it is mounted
-    function MountDSScabbard(category : name, item_name : name) : bool
+    function MountDynamicScabbard(category : name, item_name : name) : bool
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
         var scabbard : SItemUniqueId;
 
         inv = thePlayer.GetInventory();
-        scabbard = FindDSScabbard(category, item_name);
+        scabbard = FindDynamicScabbard(category, item_name);
 
         if (!inv.IsIdValid(scabbard))
         {
@@ -224,7 +224,7 @@ class DynamicScabbards
             }
 
             scabbard = ids[0];
-            inv.AddItemTag(scabbard, GetDSItemTag());
+            inv.AddItemTag(scabbard, GetDynamicScabbardTag());
         }
 
         if (!inv.IsItemMounted(scabbard))
@@ -249,7 +249,7 @@ class DynamicScabbards
 
         for (i = 0; i < ids.Size(); i += 1)
         {
-            if (!inv.ItemHasTag(ids[i], GetDSItemTag()) && inv.IsItemMounted(ids[i]))
+            if (!inv.ItemHasTag(ids[i], GetDynamicScabbardTag()) && inv.IsItemMounted(ids[i]))
             {
                 inv.UnmountItem(ids[i], true);
                 vanilla = ids[i];
@@ -270,7 +270,7 @@ class DynamicScabbards
 
         for (i = 0; i < ids.Size(); i += 1)
         {
-            if (!inv.ItemHasTag(ids[i], GetDSItemTag()) && inv.IsItemMounted(ids[i]))
+            if (!inv.ItemHasTag(ids[i], GetDynamicScabbardTag()) && inv.IsItemMounted(ids[i]))
             {
                 return true;
             }
@@ -291,7 +291,7 @@ class DynamicScabbards
         }
 
         scabbard_name = GetSteelScabbardItemName(school);
-        RemoveDSScabbards('steel_scabbards', scabbard_name);
+        RemoveDynamicScabbards('steel_scabbards', scabbard_name);
 
         vanilla = UnmountVanillaScabbard('steel_scabbards');
         if (thePlayer.GetInventory().IsIdValid(vanilla))
@@ -299,7 +299,7 @@ class DynamicScabbards
             unmounted_vanilla_steel = vanilla;
         }
 
-        if (!MountDSScabbard('steel_scabbards', scabbard_name))
+        if (!MountDynamicScabbard('steel_scabbards', scabbard_name))
         {
             RestoreVanillaSteelScabbard();
         }
@@ -307,7 +307,7 @@ class DynamicScabbards
 
     public function UnloadSteelScabbard()
     {
-        RemoveDSScabbards('steel_scabbards');
+        RemoveDynamicScabbards('steel_scabbards');
         unmounted_vanilla_steel = GetInvalidUniqueId();
     }
 
@@ -361,7 +361,7 @@ class DynamicScabbards
         }
 
         scabbard_name = GetSilverScabbardItemName(school);
-        RemoveDSScabbards('silver_scabbards', scabbard_name);
+        RemoveDynamicScabbards('silver_scabbards', scabbard_name);
 
         vanilla = UnmountVanillaScabbard('silver_scabbards');
         if (thePlayer.GetInventory().IsIdValid(vanilla))
@@ -369,7 +369,7 @@ class DynamicScabbards
             unmounted_vanilla_silver = vanilla;
         }
 
-        if (!MountDSScabbard('silver_scabbards', scabbard_name))
+        if (!MountDynamicScabbard('silver_scabbards', scabbard_name))
         {
             RestoreVanillaSilverScabbard();
         }
@@ -377,7 +377,7 @@ class DynamicScabbards
 
     public function UnloadSilverScabbard()
     {
-        RemoveDSScabbards('silver_scabbards');
+        RemoveDynamicScabbards('silver_scabbards');
         unmounted_vanilla_silver = GetInvalidUniqueId();
     }
 
@@ -497,7 +497,7 @@ class DynamicScabbards
     }
 
     // Determine which slots trigger scabbard updates based on mode
-    public function IsSwordOrArmorSlot(slot : EEquipmentSlots) : bool
+    public function TriggersScabbardUpdate(slot : EEquipmentSlots) : bool
     {
         switch (slot)
         {
@@ -539,7 +539,7 @@ class DynamicScabbards
 public var ds : DynamicScabbards;
 
 @addMethod(CR4Player)
-public function InitDS()
+public function InitDynamicScabbards()
 {
     var currentVersion: string = "3.00";
     var currentVersionFloat: float = 3.00;
@@ -589,11 +589,11 @@ public function InitDS()
 }
 
 @addMethod(CR4Player)
-function EnsureDSInitializedAndEnabled() : bool
+function EnsureDynamicScabbardsInitializedAndEnabled() : bool
 {
     if (!ds)
     {
-       InitDS();
+       InitDynamicScabbards();
     }
 
     if(!ds.IsEnabled())
@@ -613,7 +613,7 @@ timer function SetScabbardsDelayed(dt : float, id : int)
 @addMethod(CR4Player)
 function HandleScabbardUpdate(slot : EEquipmentSlots)
 {
-    if (ds.IsSwordOrArmorSlot(slot))
+    if (ds.TriggersScabbardUpdate(slot))
     {
         if(theGame.GetGuiManager().IsAnyMenu()) // we're in inventory, swap only after closing the inventory (handled by OnClosingMenu())
         {
@@ -642,7 +642,7 @@ function OnAppearanceChanged()
         return result;
     }
 
-    if (thePlayer.EnsureDSInitializedAndEnabled())
+    if (thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
     {
         thePlayer.AddTimer('SetScabbardsDelayed', 0.2, false); // note: 0.1 is too low after loading a game (or after ciri sequence)
     }
@@ -659,7 +659,7 @@ function OnBlockingSceneEnded(optional output : CStorySceneOutput)
 
     result = wrappedMethod(output);
 
-    if (this == thePlayer && EnsureDSInitializedAndEnabled())
+    if (this == thePlayer && EnsureDynamicScabbardsInitializedAndEnabled())
     {
         AddTimer('SetScabbardsDelayed', 0.5, false);
     }
@@ -679,7 +679,7 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
         return result;
     }
 
-    if (thePlayer.EnsureDSInitializedAndEnabled())
+    if (thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
     {
         thePlayer.HandleScabbardUpdate(slot);
     }
@@ -699,7 +699,7 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
         return result;
     }
 
-    if (thePlayer.EnsureDSInitializedAndEnabled())
+    if (thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
     {
         thePlayer.HandleScabbardUpdate(slot);
     }
@@ -715,7 +715,7 @@ function OnClosingMenu()
 
     result = wrappedMethod();
 
-    if (thePlayer.EnsureDSInitializedAndEnabled())
+    if (thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
     {
         if (thePlayer.ds.IsPendingUpdate())
         {
@@ -735,7 +735,7 @@ function OnClosingMenu()
 
     result = wrappedMethod();
 
-    if (thePlayer.EnsureDSInitializedAndEnabled())
+    if (thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
     {
         if (thePlayer.ds.IsPendingUpdate())
         {
@@ -749,7 +749,7 @@ function OnClosingMenu()
 
 // update the menu sfw for chestplate armor piece only setting. Disabling the options to interact with the menu when the mod is turned off prevents race conditions and exceptions
 @addMethod(CR4IngameMenu)
-function UpdateDSChestplateSettings(disabled : bool)
+function UpdateChestplateModeOption(disabled : bool)
 {
     var dataArray : CScriptedFlashArray;
     var dataObject : CScriptedFlashObject;
@@ -790,7 +790,7 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
 
     if (!thePlayer.ds)
     {
-       thePlayer.InitDS();
+       thePlayer.InitDynamicScabbards();
     }
 
     switch(optionName)
@@ -800,7 +800,7 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
 
             thePlayer.ds.SetEnabled(modEnabled);
             thePlayer.ds.SetScabbards();
-            UpdateDSChestplateSettings(!modEnabled);
+            UpdateChestplateModeOption(!modEnabled);
 
             break;
             
@@ -830,7 +830,7 @@ function OnShowOptionSubmenu(actionType : int, menuTag : int, id : string)
 
         if (!modEnabled)
         {
-            UpdateDSChestplateSettings(true);
+            UpdateChestplateModeOption(true);
         }
     }
 
