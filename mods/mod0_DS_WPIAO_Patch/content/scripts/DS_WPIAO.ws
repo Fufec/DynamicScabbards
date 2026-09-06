@@ -92,7 +92,7 @@ function SetOutfitByItem(item : SItemUniqueId) : bool
     var result : bool;
     result = wrappedMethod(item);
 
-    if (result && thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
+    if (result && thePlayer.IsDynamicScabbardsEnabled())
     {
         thePlayer.ds.SetPendingUpdate(true);
     }
@@ -106,7 +106,7 @@ function SetOutfitByDefaultItem(slot : EEquipmentSlots) : bool
     var result : bool;
     result = wrappedMethod(slot);
 
-    if (result && thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
+    if (result && thePlayer.IsDynamicScabbardsEnabled())
     {
         thePlayer.ds.SetPendingUpdate(true);
     }
@@ -120,7 +120,7 @@ function SetOutfitByOutfitSetItem(setItem : ModWPIAO_SOutfitSetItem) : bool
     var result : bool;
     result = wrappedMethod(setItem);
 
-    if (result && thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
+    if (result && thePlayer.IsDynamicScabbardsEnabled())
     {
         thePlayer.ds.SetPendingUpdate(true);
     }
@@ -134,7 +134,7 @@ function UnSetOutfitItem(slot : EEquipmentSlots, optional removeFromSet : bool) 
     var result : bool;
     result = wrappedMethod(slot, removeFromSet);
 
-    if (result && thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
+    if (result && thePlayer.IsDynamicScabbardsEnabled())
     {
         thePlayer.ds.SetPendingUpdate(true);
     }

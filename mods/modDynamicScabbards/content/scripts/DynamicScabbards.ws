@@ -49,7 +49,7 @@ class DynamicScabbards
     // Tag custom scabbard items created by this mod
     public function GetDynamicScabbardTag() : name
     {
-        return 'DS_Scabbard';
+        return 'DynamicScabbard';
     }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
@@ -588,8 +588,9 @@ public function InitDynamicScabbards()
     }
 }
 
+// initializes the mod on first use, then reports whether it is enabled in the settings
 @addMethod(CR4Player)
-function EnsureDynamicScabbardsInitializedAndEnabled() : bool
+function IsDynamicScabbardsEnabled() : bool
 {
     if (!ds)
     {
@@ -642,7 +643,7 @@ function OnAppearanceChanged()
         return result;
     }
 
-    if (thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
+    if (thePlayer.IsDynamicScabbardsEnabled())
     {
         thePlayer.AddTimer('SetScabbardsDelayed', 0.2, false); // note: 0.1 is too low after loading a game (or after ciri sequence)
     }
@@ -659,7 +660,7 @@ function OnBlockingSceneEnded(optional output : CStorySceneOutput)
 
     result = wrappedMethod(output);
 
-    if (this == thePlayer && EnsureDynamicScabbardsInitializedAndEnabled())
+    if (this == thePlayer && IsDynamicScabbardsEnabled())
     {
         AddTimer('SetScabbardsDelayed', 0.5, false);
     }
@@ -679,7 +680,7 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
         return result;
     }
 
-    if (thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
+    if (thePlayer.IsDynamicScabbardsEnabled())
     {
         thePlayer.HandleScabbardUpdate(slot);
     }
@@ -699,7 +700,7 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
         return result;
     }
 
-    if (thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
+    if (thePlayer.IsDynamicScabbardsEnabled())
     {
         thePlayer.HandleScabbardUpdate(slot);
     }
@@ -715,7 +716,7 @@ function OnClosingMenu()
 
     result = wrappedMethod();
 
-    if (thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
+    if (thePlayer.IsDynamicScabbardsEnabled())
     {
         if (thePlayer.ds.IsPendingUpdate())
         {
@@ -735,7 +736,7 @@ function OnClosingMenu()
 
     result = wrappedMethod();
 
-    if (thePlayer.EnsureDynamicScabbardsInitializedAndEnabled())
+    if (thePlayer.IsDynamicScabbardsEnabled())
     {
         if (thePlayer.ds.IsPendingUpdate())
         {
