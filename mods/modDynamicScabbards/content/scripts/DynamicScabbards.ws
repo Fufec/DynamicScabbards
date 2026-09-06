@@ -151,7 +151,7 @@ class DynamicScabbards
         }
     }
 
-    // finds dynamic scabbard by item name
+    // finds the dynamic scabbard by item name
     function FindDynamicScabbard(category : name, item_name : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
