@@ -46,17 +46,18 @@ class DynamicScabbards
         return update_pending;
     }
 
-    // Tag custom scabbard items created by this mod
-    public function GetDynamicScabbardTag() : name
+    // Marks scabbard items created by this mod. An item modifier, not a tag: the item survives
+    // a save but tags added by script do not, modifiers do
+    public function GetDynamicScabbardModifier() : name
     {
         return 'DynamicScabbard';
     }
 
-    // the tag tells a dynamic scabbard apart from a vanilla one with the same name
+    // the modifier tells a dynamic scabbard apart from a vanilla one with the same name
     // (a wolf sword binds the same scabbard_steel_wolf_01)
     function IsDynamicScabbard(item : SItemUniqueId) : bool
     {
-        return thePlayer.GetInventory().ItemHasTag(item, GetDynamicScabbardTag());
+        return thePlayer.GetInventory().GetItemModifierInt(item, GetDynamicScabbardModifier(), 0) == 1;
     }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
@@ -205,8 +206,8 @@ class DynamicScabbards
         }
     }
 
-    // an existing scabbard is reused so it does not blink on every update;
-    // a scabbard of another school is replaced
+    // an existing scabbard is reused so it does not blink on every update and does not pile up
+    // after loads (the item survives a save); a scabbard of another school is replaced
     function MountDynamicScabbard(category : name, item_name : name) : bool
     {
         var inv : CInventoryComponent;
@@ -227,7 +228,7 @@ class DynamicScabbards
             }
 
             dynamic_scabbard_id = ids[0];
-            inv.AddItemTag(dynamic_scabbard_id, GetDynamicScabbardTag());
+            inv.SetItemModifierInt(dynamic_scabbard_id, GetDynamicScabbardModifier(), 1);
         }
 
         if (!inv.IsItemMounted(dynamic_scabbard_id))
