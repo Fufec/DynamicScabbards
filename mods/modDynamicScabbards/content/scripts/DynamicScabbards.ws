@@ -213,7 +213,13 @@ class DynamicScabbards
         inv.RemoveItem(item, 1);
     }
 
-    function SetScabbard(category : name, slot : EEquipmentSlots, scabbard_to_mount : name)
+    function GetScabbardCategory(slot : EEquipmentSlots) : name
+    {
+        if (slot == EES_SteelSword) { return 'steel_scabbards'; }
+        return 'silver_scabbards';
+    }
+
+    function SetScabbardForSlot(slot : EEquipmentSlots, scabbard_to_mount : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -225,7 +231,7 @@ class DynamicScabbards
         inv = thePlayer.GetInventory();
         has_sword = GetWitcherPlayer().GetItemEquippedOnSlot(slot, sword);
         swap_wanted = IsNameValid(scabbard_to_mount);
-        ids = inv.GetItemsByCategory(category);
+        ids = inv.GetItemsByCategory(GetScabbardCategory(slot));
 
         for (i = 0; i < ids.Size(); i += 1)
         {
@@ -288,8 +294,8 @@ class DynamicScabbards
 
     public function RestoreVanillaScabbards()
     {
-        SetScabbard('steel_scabbards',  EES_SteelSword,  '');
-        SetScabbard('silver_scabbards', EES_SilverSword, '');
+        SetScabbardForSlot(EES_SteelSword,  '');
+        SetScabbardForSlot(EES_SilverSword, '');
     }
 
     // Set detection: full-set or chestplate-only mode based on chestplate_mode setting
@@ -398,8 +404,8 @@ class DynamicScabbards
             return;
         }
 
-        SetScabbard('steel_scabbards',  EES_SteelSword,  GetScabbardToMount(EES_SteelSword, school));
-        SetScabbard('silver_scabbards', EES_SilverSword, GetScabbardToMount(EES_SilverSword, school));
+        SetScabbardForSlot(EES_SteelSword,  GetScabbardToMount(EES_SteelSword, school));
+        SetScabbardForSlot(EES_SilverSword, GetScabbardToMount(EES_SilverSword, school));
     }
 }
 
