@@ -151,7 +151,7 @@ class DynamicScabbards
         }
     }
 
-    // finds our scabbard by item name
+    // finds dynamic scabbard by item name
     function FindDynamicScabbard(category : name, item_name : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
@@ -172,7 +172,7 @@ class DynamicScabbards
         return GetInvalidUniqueId();
     }
 
-    // removes our scabbards from the category, except one named keep_item_name
+    // removes dynamic scabbards from the category, except one named keep_item_name
     function RemoveDynamicScabbards(category : name, optional keep_item_name : name)
     {
         var inv : CInventoryComponent;
@@ -205,7 +205,7 @@ class DynamicScabbards
         }
     }
 
-    // adds our scabbard if it is missing and mounts it
+    // adds the dynamic scabbard if it is missing and mounts it
     function MountDynamicScabbard(category : name, item_name : name) : bool
     {
         var inv : CInventoryComponent;
