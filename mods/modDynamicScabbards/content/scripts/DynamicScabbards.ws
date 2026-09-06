@@ -623,7 +623,7 @@ function SetScabbardsWhenReady()
 {
     scabbards_wait_time = 0;
     RemoveTimer('SetScabbardsWhenReadyTick');
-    AddTimer('SetScabbardsWhenReadyTick', 0.1, true);
+    AddTimer('SetScabbardsWhenReadyTick', 0.05, true);
 }
 
 @addMethod(CR4Player)
