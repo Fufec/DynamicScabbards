@@ -16,7 +16,7 @@ public function DS_GetVisibleItemName(slot : EEquipmentSlots, out itemName : nam
     var tempId : SItemUniqueId;
 
     // WPIAO outfit is active on this slot - use the visual item name
-    // (empty outfits are already filtered out by DS_IsSlotEmptyOutfit in CheckEquippedArmor)
+    // (empty outfits are already filtered out by DS_IsSlotEmptyOutfit in GetEquippedSchool)
     if (DS_HasOutfitOnSlot(slot))
     {
         itemName = outfitSlots[slot].previewItemName;
@@ -35,7 +35,7 @@ public function DS_GetVisibleItemName(slot : EEquipmentSlots, out itemName : nam
 }
 
 @wrapMethod(DynamicScabbards)
-function CheckEquippedArmor(out school : DSSchoolSet) : bool
+function GetEquippedSchool(out school : DSSchoolSet) : bool
 {
     var manager : WPIAO_PreviewOutfitManager;
     var armorName, glovesName, pantsName, bootsName : name;

@@ -18,8 +18,8 @@ class DynamicScabbards
     var update_pending : bool; // true if a sword or an armor has been changed/unequipped
     default update_pending = false;
 
-    var vanilla_steel : SItemUniqueId;
-    var vanilla_silver : SItemUniqueId;
+    var unmounted_vanilla_steel : SItemUniqueId;
+    var unmounted_vanilla_silver : SItemUniqueId;
 
     public function SetEnabled(value : bool) 
     { 
@@ -53,7 +53,7 @@ class DynamicScabbards
     }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
-    public function IsSteelException(weapon: SItemUniqueId) : bool
+    public function IsExcludedSteelSword(weapon: SItemUniqueId) : bool
     {
         var current : name;
         current = thePlayer.GetInventory().GetItemName(weapon);
@@ -96,7 +96,7 @@ class DynamicScabbards
         return false;
     }
 
-    public function IsSilverException(weapon: SItemUniqueId) : bool
+    public function IsExcludedSilverSword(weapon: SItemUniqueId) : bool
     {
         var current : name;
         current = thePlayer.GetInventory().GetItemName(weapon);
@@ -166,14 +166,14 @@ class DynamicScabbards
 
         if (slot == EES_SteelSword)
         {
-            if (!inv.IsItemSteelSwordUsableByPlayer(sword) || IsSteelException(sword))
+            if (!inv.IsItemSteelSwordUsableByPlayer(sword) || IsExcludedSteelSword(sword))
             {
                 return '';
             }
             return GetSteelScabbardItemName(school);
         }
 
-        if (!inv.IsItemSilverSwordUsableByPlayer(sword) || IsSilverException(sword))
+        if (!inv.IsItemSilverSwordUsableByPlayer(sword) || IsExcludedSilverSword(sword))
         {
             return '';
         }
@@ -185,11 +185,11 @@ class DynamicScabbards
     {
         if (slot == EES_SteelSword) 
         {
-            vanilla_steel = item;
+            unmounted_vanilla_steel = item;
         }
         else
         {
-            vanilla_silver = item;
+            unmounted_vanilla_silver = item;
         }
     }
 
@@ -197,13 +197,13 @@ class DynamicScabbards
     {
         if (slot == EES_SteelSword)
         {
-            return vanilla_steel;
+            return unmounted_vanilla_steel;
         }
 
-        return vanilla_silver;
+        return unmounted_vanilla_silver;
     }
 
-    function RemoveScabbard(inv : CInventoryComponent, item : SItemUniqueId)
+    function RemoveDSScabbard(inv : CInventoryComponent, item : SItemUniqueId)
     {
         if (inv.IsItemMounted(item))
         {
@@ -219,31 +219,31 @@ class DynamicScabbards
         var ids : array<SItemUniqueId>;
         var new_ids : array<SItemUniqueId>;
         var sword, ds_item, vanilla : SItemUniqueId;
-        var has_sword, want_ds, ds_found, vanilla_mounted : bool;
+        var has_sword, swap_wanted, ds_found, vanilla_mounted : bool;
         var i : int;
 
         inv = thePlayer.GetInventory();
         has_sword = GetWitcherPlayer().GetItemEquippedOnSlot(slot, sword);
-        want_ds = IsNameValid(scabbard_to_mount);
+        swap_wanted = IsNameValid(scabbard_to_mount);
         ids = inv.GetItemsByCategory(category);
 
         for (i = 0; i < ids.Size(); i += 1)
         {
             if (inv.ItemHasTag(ids[i], GetDSItemTag()))
             {
-                if (want_ds && !ds_found && inv.GetItemName(ids[i]) == scabbard_to_mount)
+                if (swap_wanted && !ds_found && inv.GetItemName(ids[i]) == scabbard_to_mount)
                 {
                     ds_found = true;
                     ds_item = ids[i];
                 }
                 else
                 {
-                    RemoveScabbard(inv, ids[i]);
+                    RemoveDSScabbard(inv, ids[i]);
                 }
             }
             else if (inv.IsItemMounted(ids[i]))
             {
-                if (want_ds)
+                if (swap_wanted)
                 {
                     RememberVanilla(slot, ids[i]);
                     inv.UnmountItem(ids[i], true);
@@ -255,7 +255,7 @@ class DynamicScabbards
             }
         }
 
-        if (want_ds)
+        if (swap_wanted)
         {
             if (!ds_found)
             {
@@ -286,7 +286,7 @@ class DynamicScabbards
         }
     }
 
-    public function UnloadScabbardsAndRestoreVanilla()
+    public function RestoreVanillaScabbards()
     {
         SetScabbard('steel_scabbards',  EES_SteelSword,  '');
         SetScabbard('silver_scabbards', EES_SilverSword, '');
@@ -327,7 +327,7 @@ class DynamicScabbards
         return false;
     }
 
-    public function CheckEquippedArmor(out school: DSSchoolSet) : bool
+    public function GetEquippedSchool(out school: DSSchoolSet) : bool
     {
         var armor : SItemUniqueId;
         var gloves : SItemUniqueId;
@@ -392,9 +392,9 @@ class DynamicScabbards
             return;
         }
 
-        if (!enabled || !CheckEquippedArmor(school))
+        if (!enabled || !GetEquippedSchool(school))
         {
-            UnloadScabbardsAndRestoreVanilla();
+            RestoreVanillaScabbards();
             return;
         }
 
