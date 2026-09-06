@@ -205,12 +205,12 @@ class DynamicScabbards
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
-        var scabbard_id : SItemUniqueId;
+        var dynamic_scabbard_id : SItemUniqueId;
 
         inv = thePlayer.GetInventory();
-        scabbard_id = FindDynamicScabbard(category, item_name);
+        dynamic_scabbard_id = FindDynamicScabbard(category, item_name);
 
-        if (!inv.IsIdValid(scabbard_id))
+        if (!inv.IsIdValid(dynamic_scabbard_id))
         {
             RemoveDynamicScabbards(category);
             ids = inv.AddAnItem(item_name, 1, true, true);
@@ -220,13 +220,13 @@ class DynamicScabbards
                 return false; // item definition missing (e.g. dlc10 not installed)
             }
 
-            scabbard_id = ids[0];
-            inv.AddItemTag(scabbard_id, GetDynamicScabbardTag());
+            dynamic_scabbard_id = ids[0];
+            inv.AddItemTag(dynamic_scabbard_id, GetDynamicScabbardTag());
         }
 
-        if (!inv.IsItemMounted(scabbard_id))
+        if (!inv.IsItemMounted(dynamic_scabbard_id))
         {
-            inv.MountItem(scabbard_id);
+            inv.MountItem(dynamic_scabbard_id);
         }
 
         return true;
