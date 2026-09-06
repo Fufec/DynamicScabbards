@@ -232,33 +232,8 @@ class DynamicScabbards
         return true;
     }
 
-    // unmounting destroys the entity on Geralt's back but keeps the item in the inventory,
-    // so it can be mounted again when the mod lets go of the category
-    function UnmountVanillaScabbard(category : name) : SItemUniqueId
-    {
-        var inv : CInventoryComponent;
-        var ids : array<SItemUniqueId>;
-        var vanilla_scabbard_id : SItemUniqueId;
-        var i : int;
-
-        inv = thePlayer.GetInventory();
-        ids = inv.GetItemsByCategory(category);
-        vanilla_scabbard_id = GetInvalidUniqueId();
-
-        for (i = 0; i < ids.Size(); i += 1)
-        {
-            if (!inv.ItemHasTag(ids[i], GetDynamicScabbardTag()) && inv.IsItemMounted(ids[i]))
-            {
-                inv.UnmountItem(ids[i], true);
-                vanilla_scabbard_id = ids[i];
-            }
-        }
-
-        return vanilla_scabbard_id;
-    }
-
-    // if the engine already mounted a vanilla scabbard (e.g. for an excluded sword), there is nothing to restore
-    function IsVanillaScabbardMounted(category : name) : bool
+    // the engine mounts only the bound scabbard of the equipped sword, so there is at most one
+    function FindMountedVanillaScabbard(category : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -271,19 +246,22 @@ class DynamicScabbards
         {
             if (!inv.ItemHasTag(ids[i], GetDynamicScabbardTag()) && inv.IsItemMounted(ids[i]))
             {
-                return true;
+                return ids[i];
             }
         }
 
-        return false;
+        return GetInvalidUniqueId();
     }
 
     function LoadSteelScabbard(sword_steel : SItemUniqueId, school : DSSchoolSet)
     {
+        var inv : CInventoryComponent;
         var scabbard_name : name;
         var vanilla_scabbard_id : SItemUniqueId;
 
-        if (!thePlayer.GetInventory().IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(sword_steel))
+        inv = thePlayer.GetInventory();
+
+        if (!inv.IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(sword_steel))
         {
             RestoreVanillaSteelScabbard();
             return;
@@ -291,9 +269,12 @@ class DynamicScabbards
 
         scabbard_name = GetSteelScabbardItemName(school);
 
-        vanilla_scabbard_id = UnmountVanillaScabbard('steel_scabbards');
-        if (thePlayer.GetInventory().IsIdValid(vanilla_scabbard_id))
+        vanilla_scabbard_id = FindMountedVanillaScabbard('steel_scabbards');
+        if (inv.IsIdValid(vanilla_scabbard_id))
         {
+            // unmounting destroys the entity on Geralt's back but keeps the item in the inventory,
+            // so it can be mounted again when the mod lets go of the category
+            inv.UnmountItem(vanilla_scabbard_id, true);
             unmounted_vanilla_steel = vanilla_scabbard_id;
         }
 
@@ -311,9 +292,11 @@ class DynamicScabbards
 
     public function RestoreVanillaSteelScabbard()
     {
+        var inv : CInventoryComponent;
         var vanilla_scabbard_id : SItemUniqueId;
         var sword_steel : SItemUniqueId;
 
+        inv = thePlayer.GetInventory();
         vanilla_scabbard_id = unmounted_vanilla_steel;
         UnloadSteelScabbard();
 
@@ -322,14 +305,15 @@ class DynamicScabbards
             return;
         }
 
-        if (IsVanillaScabbardMounted('steel_scabbards'))
+        // the engine may have mounted a vanilla scabbard on its own (e.g. for an excluded sword)
+        if (inv.IsIdValid(FindMountedVanillaScabbard('steel_scabbards')))
         {
             return;
         }
 
-        if (thePlayer.GetInventory().IsIdValid(vanilla_scabbard_id))
+        if (inv.IsIdValid(vanilla_scabbard_id))
         {
-            thePlayer.GetInventory().MountItem(vanilla_scabbard_id);
+            inv.MountItem(vanilla_scabbard_id);
         }
     }
 
@@ -349,10 +333,13 @@ class DynamicScabbards
 
     function LoadSilverScabbard(sword_silver : SItemUniqueId, school : DSSchoolSet)
     {
+        var inv : CInventoryComponent;
         var scabbard_name : name;
         var vanilla_scabbard_id : SItemUniqueId;
 
-        if (!thePlayer.GetInventory().IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(sword_silver))
+        inv = thePlayer.GetInventory();
+
+        if (!inv.IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(sword_silver))
         {
             RestoreVanillaSilverScabbard();
             return;
@@ -360,9 +347,12 @@ class DynamicScabbards
 
         scabbard_name = GetSilverScabbardItemName(school);
 
-        vanilla_scabbard_id = UnmountVanillaScabbard('silver_scabbards');
-        if (thePlayer.GetInventory().IsIdValid(vanilla_scabbard_id))
+        vanilla_scabbard_id = FindMountedVanillaScabbard('silver_scabbards');
+        if (inv.IsIdValid(vanilla_scabbard_id))
         {
+            // unmounting destroys the entity on Geralt's back but keeps the item in the inventory,
+            // so it can be mounted again when the mod lets go of the category
+            inv.UnmountItem(vanilla_scabbard_id, true);
             unmounted_vanilla_silver = vanilla_scabbard_id;
         }
 
@@ -380,9 +370,11 @@ class DynamicScabbards
 
     public function RestoreVanillaSilverScabbard()
     {
+        var inv : CInventoryComponent;
         var vanilla_scabbard_id : SItemUniqueId;
         var sword_silver : SItemUniqueId;
 
+        inv = thePlayer.GetInventory();
         vanilla_scabbard_id = unmounted_vanilla_silver;
         UnloadSilverScabbard();
 
@@ -391,14 +383,15 @@ class DynamicScabbards
             return;
         }
 
-        if (IsVanillaScabbardMounted('silver_scabbards'))
+        // the engine may have mounted a vanilla scabbard on its own (e.g. for an excluded sword)
+        if (inv.IsIdValid(FindMountedVanillaScabbard('silver_scabbards')))
         {
             return;
         }
 
-        if (thePlayer.GetInventory().IsIdValid(vanilla_scabbard_id))
+        if (inv.IsIdValid(vanilla_scabbard_id))
         {
-            thePlayer.GetInventory().MountItem(vanilla_scabbard_id);
+            inv.MountItem(vanilla_scabbard_id);
         }
     }
 
