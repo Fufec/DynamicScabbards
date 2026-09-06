@@ -172,12 +172,11 @@ class DynamicScabbards
         return GetInvalidUniqueId();
     }
 
-    // removes dynamic scabbards from the category, except one named keep_item_name
-    function RemoveDynamicScabbards(category : name, optional keep_item_name : name)
+    // removes all dynamic scabbards from the category
+    function RemoveDynamicScabbards(category : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
-        var kept : bool;
         var i : int;
 
         inv = thePlayer.GetInventory();
@@ -190,12 +189,6 @@ class DynamicScabbards
                 continue;
             }
 
-            if (!kept && IsNameValid(keep_item_name) && inv.GetItemName(ids[i]) == keep_item_name)
-            {
-                kept = true;
-                continue;
-            }
-
             if (inv.IsItemMounted(ids[i]))
             {
                 inv.UnmountItem(ids[i], true);
@@ -205,7 +198,7 @@ class DynamicScabbards
         }
     }
 
-    // adds the dynamic scabbard if it is missing and mounts it
+    // mounts the dynamic scabbard; if it is missing, replaces the previous one with it
     function MountDynamicScabbard(category : name, item_name : name) : bool
     {
         var inv : CInventoryComponent;
@@ -217,6 +210,8 @@ class DynamicScabbards
 
         if (!inv.IsIdValid(scabbard))
         {
+            RemoveDynamicScabbards(category);
+
             ids = inv.AddAnItem(item_name, 1, true, true);
 
             if (ids.Size() == 0)
@@ -292,7 +287,6 @@ class DynamicScabbards
         }
 
         scabbard_name = GetSteelScabbardItemName(school);
-        RemoveDynamicScabbards('steel_scabbards', scabbard_name);
 
         vanilla = UnmountVanillaScabbard('steel_scabbards');
         if (thePlayer.GetInventory().IsIdValid(vanilla))
@@ -362,7 +356,6 @@ class DynamicScabbards
         }
 
         scabbard_name = GetSilverScabbardItemName(school);
-        RemoveDynamicScabbards('silver_scabbards', scabbard_name);
 
         vanilla = UnmountVanillaScabbard('silver_scabbards');
         if (thePlayer.GetInventory().IsIdValid(vanilla))
