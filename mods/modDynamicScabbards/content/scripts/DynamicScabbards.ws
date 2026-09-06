@@ -151,7 +151,8 @@ class DynamicScabbards
         }
     }
 
-    // finds the item that has the dynamic scabbard tag and the given name
+    // the tag tells a dynamic scabbard apart from a vanilla one with the same name (a wolf sword
+    // binds the same scabbard_steel_wolf_01), the name tells the school
     function FindDynamicScabbard(category : name, item_name : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
@@ -172,7 +173,7 @@ class DynamicScabbards
         return GetInvalidUniqueId();
     }
 
-    // removes all dynamic scabbards from the category
+    // vanilla scabbards are never removed, only the ones this mod added
     function RemoveDynamicScabbards(category : name)
     {
         var inv : CInventoryComponent;
@@ -198,7 +199,8 @@ class DynamicScabbards
         }
     }
 
-    // mounts the dynamic scabbard; if it is missing, replaces the previous one with it
+    // an existing scabbard is reused so it does not blink on every update;
+    // a scabbard of another school is replaced
     function MountDynamicScabbard(category : name, item_name : name) : bool
     {
         var inv : CInventoryComponent;
@@ -211,7 +213,6 @@ class DynamicScabbards
         if (!inv.IsIdValid(scabbard))
         {
             RemoveDynamicScabbards(category);
-
             ids = inv.AddAnItem(item_name, 1, true, true);
 
             if (ids.Size() == 0)
@@ -231,7 +232,8 @@ class DynamicScabbards
         return true;
     }
 
-    // unmounts the vanilla scabbard and returns it
+    // unmounting destroys the entity on Geralt's back but keeps the item in the inventory,
+    // so it can be mounted again when the mod lets go of the category
     function UnmountVanillaScabbard(category : name) : SItemUniqueId
     {
         var inv : CInventoryComponent;
@@ -255,6 +257,7 @@ class DynamicScabbards
         return vanilla;
     }
 
+    // if the engine already mounted a vanilla scabbard (e.g. for an excluded sword), there is nothing to restore
     function IsVanillaScabbardMounted(category : name) : bool
     {
         var inv : CInventoryComponent;
