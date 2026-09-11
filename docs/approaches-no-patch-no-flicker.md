@@ -392,3 +392,9 @@ Test (co má potvrdit):
 - Neviditelné itemy a jejich kategorie přejmenovány z `dsc_` na `ds_` (`ds_steel_lynx`, kategorie
   `ds_steel`, `ds_silver`). Itemy `dsc_*` ze starých testovacích savů zůstanou bez definice, což je
   zároveň test bodu 9.
+- Odklad aktualizace do zavření menu (`update_pending`, `OnClosingMenu`) vyhozen. Důvod pro něj byl,
+  že deset změn v nastavení znamenalo deset přestaveb vzhledu přes `IncludeAppearanceTemplate`, což
+  lagovalo. Teď je jedno volání jen kontrola namountovaného itemu. Nastavení i patch pro WPIAO
+  volají `SetScabbards` rovnou.
+- Wrapy událostí (`OnBlockingSceneStarted`, `OnBlockingSceneEnded`) se píší bez návratového typu,
+  kompilátor jinak hlásí "Event function cannot return implicit a value".

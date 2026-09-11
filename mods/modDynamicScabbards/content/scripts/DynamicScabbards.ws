@@ -15,9 +15,6 @@ class DynamicScabbards
     var enabled : bool; // mod enabled
     var chestplate_mode : bool; // if true, only chestplate armor piece will be required for the swap to occur
 
-    var update_pending : bool; // true if a sword or an armor has been changed/unequipped
-    default update_pending = false;
-
     public function SetEnabled(value : bool) 
     { 
         enabled = value; 
@@ -28,19 +25,9 @@ class DynamicScabbards
         chestplate_mode = value; 
     }
 
-    public function SetPendingUpdate(value: bool)
-    {
-        update_pending = value;
-    }
-
     public function IsEnabled() : bool 
     { 
         return enabled; 
-    }
-
-    public function IsPendingUpdate() : bool
-    {
-        return update_pending;
     }
 
     // The scabbard definitions carry variants (mod bundle, gameplay\items\dynamic_scabbards.xml):
@@ -444,7 +431,7 @@ function IsDynamicScabbardsEnabled() : bool
 function HandleScabbardUpdate(slot : EEquipmentSlots)
 {
     // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
-    // the equipped sword and armor right away (a pending update is still used by the settings menu)
+    // the equipped sword and armor right away. Cheap: usually the right item is already mounted
     if (ds.TriggersScabbardUpdate(slot))
     {
         ds.SetScabbards();
@@ -513,46 +500,6 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
     return result;
 }
 
-// handle pending update when returning from GUI menu
-@wrapMethod(CR4CommonMenu)
-function OnClosingMenu()
-{
-    var result: bool;
-
-    result = wrappedMethod();
-
-    if (thePlayer.IsDynamicScabbardsEnabled())
-    {
-        if (thePlayer.ds.IsPendingUpdate())
-        {
-            thePlayer.ds.SetScabbards();
-            thePlayer.ds.SetPendingUpdate(false);
-        }
-    }
-
-    return result;
-}
-
-// handle pending updates when returning from pause menu
-@wrapMethod(CR4CommonIngameMenu)
-function OnClosingMenu()
-{
-    var result: bool;
-
-    result = wrappedMethod();
-
-    if (thePlayer.IsDynamicScabbardsEnabled())
-    {
-        if (thePlayer.ds.IsPendingUpdate())
-        {
-            thePlayer.ds.SetScabbards();
-            thePlayer.ds.SetPendingUpdate(false);
-        }
-    }
-
-    return result;
-}
-
 // update the menu sfw for chestplate armor piece only setting. Disabling the options to interact with the menu when the mod is turned off prevents race conditions and exceptions
 @addMethod(CR4IngameMenu)
 function UpdateChestplateModeOption(disabled : bool)
@@ -612,7 +559,7 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
             
         case 'DSModeChestplate':
             thePlayer.ds.SetChestplateMode(inGameConfig.GetVarValue(groupName, 'DSModeChestplate'));
-            thePlayer.ds.SetPendingUpdate(true);
+            thePlayer.ds.SetScabbards();
             break;
     }
 
