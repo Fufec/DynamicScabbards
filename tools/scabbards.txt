@@ -138,3 +138,6 @@ scabbard_silver_zirael | silver_scabbards | vanilla
 Witcher Silver Sword Scabbard | silver_scabbards | vanilla
 scabbard_silver_dol_blathanna | silver_scabbards | W3EE
 silver_blaviken_scabbard | silver_scabbards | W3EE
+
+# TEST bodu 10: definice, kterou zadny mod nema. Po testu smazat.
+ds_test_missing_scabbard | steel_scabbards | test

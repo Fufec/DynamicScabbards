@@ -438,26 +438,17 @@ function HandleScabbardUpdate(slot : EEquipmentSlots)
     }
 }
 
-// safety net after a load or the Ciri swap (OnAfterLoadingScreenGameStart): the school item is in
-// the save and stays mounted, so this normally finds nothing to do
-@wrapMethod(CActor)
-function OnAppearanceChanged()
+// once after every load: the school item is in the save and stays mounted, so this normally finds
+// nothing to do; it matters when the mod is installed on an existing save or was updated
+@wrapMethod(CR4Game)
+function OnAfterLoadingScreenGameStart()
 {
-    var result : bool;
-
-    result = wrappedMethod();
-
-    if (this != thePlayer)
-    {
-        return result;
-    }
+    wrappedMethod();
 
     if (thePlayer.IsDynamicScabbardsEnabled())
     {
         thePlayer.ds.SetScabbards();
     }
-
-    return result;
 }
 
 @wrapMethod(W3PlayerWitcher)
