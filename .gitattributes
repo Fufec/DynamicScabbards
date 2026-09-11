@@ -4,3 +4,5 @@
 *.xml       -text
 *.sh  text eol=lf
 *.yml text eol=lf
+*.bundle binary
+*.store  binary

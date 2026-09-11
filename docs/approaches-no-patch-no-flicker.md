@@ -330,3 +330,49 @@ Ofir Sabre, Karabela apod.).
 šablonu namountované pochvy za běhu. Přístup A (varianty) zůstává jediný, který
 nepotřebuje skrývání ani wrapy. Force mount je jediný nový poznatek a patří
 k přístupu B.
+
+## Implementace cesty A na větvi (11. 9. 2026)
+
+Rozhodnutí: vyzkoušet varianty naostro. Stav na větvi `experimental/item-swap`:
+
+- `tools/scabbards.txt`: seznam 133 definic pochev (93 ocelových, 40 stříbrných) ze všech bundlů
+  nainstalované hry (content0, dlc10, bob, W3EE, Brothers in Arms). Původ je u každého řádku.
+- `tools/gen_variants.py`: z toho seznamu vygeneruje `bundle_src/gameplay/items/dynamic_scabbards.xml`
+  a totéž do `items_plus` pro NG+. 14 neviditelných itemů `dsc_steel_<škola>` / `dsc_silver_<škola>`
+  (kategorie `dsc_steel`, `dsc_silver`, prázdná šablona, tagy `NoShow,NoDrop,EncumbranceOff`) a ke každé
+  pochvě `item_extension` se sedmi variantami. Šablony škol: `scabbard_steel_1_01` (Kaer Morhen),
+  `witcher_steel_{bear,lynx,gryphon,wolf,netflix}_scabbard`, `scabbard_steel_1_02` (Zmije); stříbro
+  analogicky, Zmije `scabbard_silver_1_05`. Manticora používá vlčí šablonu z dlc10 jako dosud
+  (vanilla má pro ni kopii `witcher_steel_wolf_scabbard_ep2` v bob se stejným meshem a texturami).
+- `tools/pack_bundle.sh`: `wcc_lite pack` + `metadatastore` do `mods/modDynamicScabbards/content/`
+  (`blob0.bundle` 11 kB, `metadata.store`). Bundle i XML jsou v repu, release nepotřebuje wcc_lite.
+- `DynamicScabbards.ws`: jádro přepsané. `SetSchoolItem(category, item_name)` drží v inventáři a
+  namountovaný právě jeden neviditelný item kategorie (ostatní odebere, chybějící přidá přes
+  `AddAnItem` a `MountItem`), `''` odebere všechny. `UpdateSteelScabbard` / `UpdateSilverScabbard`
+  vyberou item podle školy, u vyloučeného nebo nepoužitelného meče item odeberou.
+  `RestoreVanillaScabbards` = odebrat oba. Zmizel modifier, item swap, poll `SetScabbardsWhenReady`,
+  timer, hook `OnBlockingSceneEnded`. `HandleScabbardUpdate` volá `SetScabbards` rovnou.
+  `OnAppearanceChanged` zůstal jen jako pojistka po loadu (item je v savu a zůstává namountovaný,
+  takže normálně nic nedělá). WPIAO patch se nemění (`GetEquippedSchool`, `GetSchoolFromArmor`,
+  `chestplate_mode`, `SetPendingUpdate` zůstaly).
+- Ve hře: nový core + bundle nainstalované, `modDSVariantsTest` smazán (jeho rozšíření by se s novými
+  potkala na stejných pochvách), `modDSTest` nahrazen malým: `ds_scabs()`, `ds_template(cat)`,
+  `ds_set()`, `ds_purge_old()` (pozůstatky item swapu s modifikátorem), `ds_school_item(cat, item)`,
+  `ds_school_item_clear(cat)`.
+
+Test (co má potvrdit):
+
+1. Kompilace a start. `ds_scabs()`: v `dsc_steel` a `dsc_silver` po nasazení školní zbroje jeden item M.
+2. `ds_template('steel_scabbards')`: namountovaná pochva meče má školní šablonu.
+3. Tasení, schování, F5/F9, rychlé cestování, holič, rozhovor, Imlerith (scéna, kde se dřív vracela
+   vanilla pochva), Ciri, meditace, výměna meče a zbroje v menu: bez bliknutí vanilla pochvy.
+4. Změna školy: jak vypadá přepnutí (respawn pochvy, případný snímek vanilla).
+5. Vypnutí modu v nastavení: vanilla pochvy hned. Zapnutí: školní hned.
+6. Vlčí meč (definice pochvy z dlc10) se školní zbrojí jiné školy: rozšíření z mod bundlu zabírá i na
+   definici z DLC.
+7. Vyloučený meč (např. Olgierd Sabre): vanilla pochva, item kategorie odebraný.
+8. NG+ save, pokud je: školní pochvy = `items_plus` se z mod bundlu načetl.
+9. Odinstalace (smazat bundle i skripty): load savu s neviditelným itemem, hra nesmí nic hlásit,
+   pochvy vanilla.
+10. Až po testech: rozšíření na pochvu, jejíž mod není nainstalovaný (řádek s vymyšleným jménem
+    v `scabbards.txt`), rozhodne, jestli může být seznam modových pochev v jednom souboru.

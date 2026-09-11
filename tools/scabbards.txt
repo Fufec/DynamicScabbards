@@ -1,0 +1,140 @@
+# Seznam definic pochev, ke kterym gen_variants.py pridava item_extension s variantami.
+# Format: jmeno_definice | kategorie | puvod. Radky s # se preskakuji.
+# Vygenerovano 2026-09-11 ze vsech bundlu nainstalovane hry (content, dlc, mods).
+
+# --- steel_scabbards ---
+Ciri Zireael Sword Scabbard | steel_scabbards | vanilla
+Long Steel Sword Scabbard | steel_scabbards | vanilla
+NPC Witcher Steel Sword Scabbard | steel_scabbards | vanilla
+q704_scabbard_steel_vampire | steel_scabbards | vanilla
+Sabre Scabbard 01 | steel_scabbards | vanilla
+Sabre Scabbard 01_2 | steel_scabbards | vanilla
+Sabre Scabbard 01_3 | steel_scabbards | vanilla
+Sabre Scabbard 02 | steel_scabbards | vanilla
+Sabre Scabbard 03 | steel_scabbards | vanilla
+Sabre Scabbard 04 | steel_scabbards | vanilla
+Sabre Scabbard 05 | steel_scabbards | vanilla
+Sabre Scabbard 06 | steel_scabbards | vanilla
+Sabre Scabbard 07 | steel_scabbards | vanilla
+Sabre Scabbard v01 | steel_scabbards | vanilla
+Sabre Scabbard v02 | steel_scabbards | vanilla
+scabbard_knight_lvl1 | steel_scabbards | vanilla
+scabbard_nilf_lvl1 | steel_scabbards | vanilla
+scabbard_nilf_lvl2 | steel_scabbards | vanilla
+scabbard_nilf_lvl3 | steel_scabbards | vanilla
+scabbard_nilf_lvl4 | steel_scabbards | vanilla
+scabbard_nomansland_lvl1 | steel_scabbards | vanilla
+scabbard_nomansland_lvl2 | steel_scabbards | vanilla
+scabbard_nomansland_lvl3 | steel_scabbards | vanilla
+scabbard_nomansland_lvl4 | steel_scabbards | vanilla
+scabbard_novigrad_lvl1 | steel_scabbards | vanilla
+scabbard_novigrad_lvl2 | steel_scabbards | vanilla
+scabbard_novigrad_lvl3 | steel_scabbards | vanilla
+scabbard_novigrad_lvl4 | steel_scabbards | vanilla
+scabbard_novigrad_lvl5 | steel_scabbards | vanilla
+scabbard_sabre_lvl1 | steel_scabbards | vanilla
+scabbard_sabre_lvl2 | steel_scabbards | vanilla
+scabbard_sabre_lvl3 | steel_scabbards | vanilla
+scabbard_sabre_lvl4 | steel_scabbards | vanilla
+scabbard_skellige_lvl1 | steel_scabbards | vanilla
+scabbard_skellige_lvl2 | steel_scabbards | vanilla
+scabbard_skellige_lvl3 | steel_scabbards | vanilla
+scabbard_skellige_lvl4 | steel_scabbards | vanilla
+scabbard_steel_1_01 | steel_scabbards | vanilla
+scabbard_steel_1_02 | steel_scabbards | vanilla
+scabbard_steel_1_02_02 | steel_scabbards | vanilla
+scabbard_steel_1_02_03 | steel_scabbards | vanilla
+scabbard_steel_1_03 | steel_scabbards | vanilla
+scabbard_steel_1_04 | steel_scabbards | vanilla
+scabbard_steel_1_04_02 | steel_scabbards | vanilla
+scabbard_steel_1_05 | steel_scabbards | vanilla
+scabbard_steel_1_06 | steel_scabbards | vanilla
+scabbard_steel_1_wood | steel_scabbards | vanilla
+scabbard_steel_1v_01 | steel_scabbards | vanilla
+scabbard_steel_2_01 | steel_scabbards | vanilla
+scabbard_steel_2v_01 | steel_scabbards | vanilla
+scabbard_steel_3_01 | steel_scabbards | vanilla
+scabbard_steel_3_02 | steel_scabbards | vanilla
+scabbard_steel_3_03 | steel_scabbards | vanilla
+scabbard_steel_3_04 | steel_scabbards | vanilla
+scabbard_steel_3_05 | steel_scabbards | vanilla
+scabbard_steel_3_06 | steel_scabbards | vanilla
+scabbard_steel_3v_01 | steel_scabbards | vanilla
+scabbard_steel_bear_01 | steel_scabbards | vanilla
+scabbard_steel_gryphon_01 | steel_scabbards | vanilla
+scabbard_steel_lynx_01 | steel_scabbards | vanilla
+scabbard_steel_netflix_01 | steel_scabbards | vanilla
+scabbard_steel_nilfgaard_01 | steel_scabbards | vanilla
+scabbard_steel_nilfgaard_01_02 | steel_scabbards | vanilla
+scabbard_steel_nilfgaard_02 | steel_scabbards | vanilla
+scabbard_steel_nilfgaard_03 | steel_scabbards | vanilla
+scabbard_steel_nilfgaard_04 | steel_scabbards | vanilla
+scabbard_steel_nomansland_01 | steel_scabbards | vanilla
+scabbard_steel_nomansland_02 | steel_scabbards | vanilla
+scabbard_steel_nomansland_03 | steel_scabbards | vanilla
+scabbard_steel_nomansland_04 | steel_scabbards | vanilla
+scabbard_steel_novigradian_01 | steel_scabbards | vanilla
+scabbard_steel_novigradian_02 | steel_scabbards | vanilla
+scabbard_steel_novigradian_03 | steel_scabbards | vanilla
+scabbard_steel_novigradian_04 | steel_scabbards | vanilla
+scabbard_steel_novigradian_05 | steel_scabbards | vanilla
+scabbard_steel_skellige_01 | steel_scabbards | vanilla
+scabbard_steel_skellige_02 | steel_scabbards | vanilla
+scabbard_steel_skellige_03 | steel_scabbards | vanilla
+scabbard_steel_skellige_04 | steel_scabbards | vanilla
+scabbard_steel_vampire | steel_scabbards | vanilla
+scabbard_steel_vixen | steel_scabbards | vanilla
+scabbard_steel_wolf_01 | steel_scabbards | vanilla
+scabbard_steel_wolf_ep2 | steel_scabbards | vanilla
+scabbard_wild_hunt_lvl1 | steel_scabbards | vanilla
+NPC Scabbard 1 | steel_scabbards | W3EE
+NPC Scabbard 2 | steel_scabbards | W3EE
+NPC Scabbard HOS | steel_scabbards | W3EE
+NPC Scabbard Knight | steel_scabbards | W3EE
+NPC Scabbard Sabre | steel_scabbards | W3EE
+NPC Scabbard Short | steel_scabbards | W3EE
+olgierd_sabre_curved_scabbard | steel_scabbards | BrothersInArms
+scabbard_steel_dol_blathanna | steel_scabbards | W3EE
+steel_blaviken_scabbard | steel_scabbards | W3EE
+
+# --- silver_scabbards ---
+NPC Witcher Silver Sword Scabbard | silver_scabbards | vanilla
+scabbard_silver_1_01 | silver_scabbards | vanilla
+scabbard_silver_1_02 | silver_scabbards | vanilla
+scabbard_silver_1_03 | silver_scabbards | vanilla
+scabbard_silver_1_04 | silver_scabbards | vanilla
+scabbard_silver_1_05 | silver_scabbards | vanilla
+scabbard_silver_1_06 | silver_scabbards | vanilla
+scabbard_silver_1_07 | silver_scabbards | vanilla
+scabbard_silver_1_08 | silver_scabbards | vanilla
+scabbard_silver_1_09 | silver_scabbards | vanilla
+scabbard_silver_1_10 | silver_scabbards | vanilla
+scabbard_silver_1_12 | silver_scabbards | vanilla
+scabbard_silver_1_13 | silver_scabbards | vanilla
+scabbard_silver_1v_01 | silver_scabbards | vanilla
+scabbard_silver_1v_02 | silver_scabbards | vanilla
+scabbard_silver_1v_10 | silver_scabbards | vanilla
+scabbard_silver_1v_11 | silver_scabbards | vanilla
+scabbard_silver_2_01 | silver_scabbards | vanilla
+scabbard_silver_2_02 | silver_scabbards | vanilla
+scabbard_silver_2_03 | silver_scabbards | vanilla
+scabbard_silver_2_04 | silver_scabbards | vanilla
+scabbard_silver_2v_01 | silver_scabbards | vanilla
+scabbard_silver_3_01 | silver_scabbards | vanilla
+scabbard_silver_3_02 | silver_scabbards | vanilla
+scabbard_silver_3_03 | silver_scabbards | vanilla
+scabbard_silver_3_04 | silver_scabbards | vanilla
+scabbard_silver_3_05 | silver_scabbards | vanilla
+scabbard_silver_3v_01 | silver_scabbards | vanilla
+scabbard_silver_bear_01 | silver_scabbards | vanilla
+scabbard_silver_gryphon_01 | silver_scabbards | vanilla
+scabbard_silver_lynx_01 | silver_scabbards | vanilla
+scabbard_silver_netflix_01 | silver_scabbards | vanilla
+scabbard_silver_vampire | silver_scabbards | vanilla
+scabbard_silver_vixen | silver_scabbards | vanilla
+scabbard_silver_wolf_01 | silver_scabbards | vanilla
+scabbard_silver_wolf_ep2 | silver_scabbards | vanilla
+scabbard_silver_zirael | silver_scabbards | vanilla
+Witcher Silver Sword Scabbard | silver_scabbards | vanilla
+scabbard_silver_dol_blathanna | silver_scabbards | W3EE
+silver_blaviken_scabbard | silver_scabbards | W3EE
