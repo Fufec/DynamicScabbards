@@ -132,7 +132,7 @@ class DynamicScabbards
             case DS_Set_Bear:              return 'dsc_steel_bear';
             case DS_Set_Cat:               return 'dsc_steel_lynx';
             case DS_Set_Griffin:           return 'dsc_steel_gryphon';
-            case DS_Set_Manticore:
+            case DS_Set_Manticore:         return 'dsc_steel_manticore';
             case DS_Set_Wolf:              return 'dsc_steel_wolf';
             case DS_Set_Viper:             return 'dsc_steel_viper';
             case DS_Set_ForgottenWolf:     return 'dsc_steel_netflix';
@@ -148,7 +148,7 @@ class DynamicScabbards
             case DS_Set_Bear:              return 'dsc_silver_bear';
             case DS_Set_Cat:               return 'dsc_silver_lynx';
             case DS_Set_Griffin:           return 'dsc_silver_gryphon';
-            case DS_Set_Manticore:
+            case DS_Set_Manticore:         return 'dsc_silver_manticore';
             case DS_Set_Wolf:              return 'dsc_silver_wolf';
             case DS_Set_Viper:             return 'dsc_silver_viper';
             case DS_Set_ForgottenWolf:     return 'dsc_silver_netflix';
@@ -218,9 +218,12 @@ class DynamicScabbards
 
         inv = thePlayer.GetInventory();
 
-        if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel)
-            || !inv.IsItemSteelSwordUsableByPlayer(sword_steel)
-            || IsExcludedSteelSword(sword_steel))
+        if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
+        {
+            return; // no scabbard is mounted; the school item stays for the next sword
+        }
+
+        if (!inv.IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(sword_steel))
         {
             SetSchoolItem(GetSteelSchoolItemCategory(), '');
             return;
@@ -236,9 +239,12 @@ class DynamicScabbards
 
         inv = thePlayer.GetInventory();
 
-        if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver)
-            || !inv.IsItemSilverSwordUsableByPlayer(sword_silver)
-            || IsExcludedSilverSword(sword_silver))
+        if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
+        {
+            return; // no scabbard is mounted; the school item stays for the next sword
+        }
+
+        if (!inv.IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(sword_silver))
         {
             SetSchoolItem(GetSilverSchoolItemCategory(), '');
             return;
@@ -437,19 +443,11 @@ function IsDynamicScabbardsEnabled() : bool
 @addMethod(CR4Player)
 function HandleScabbardUpdate(slot : EEquipmentSlots)
 {
+    // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
+    // the equipped sword and armor right away (a pending update is still used by the settings menu)
     if (ds.TriggersScabbardUpdate(slot))
     {
-        if(theGame.GetGuiManager().IsAnyMenu()) // we're in inventory, swap only after closing the inventory (handled by OnClosingMenu())
-        {
-            if (!ds.IsPendingUpdate())
-            {
-                ds.SetPendingUpdate(true);
-            }
-        }
-        else // e.g. a scripted equip in a cutscene or at the barber
-        {
-            ds.SetScabbards();
-        }
+        ds.SetScabbards();
     }
 }
 

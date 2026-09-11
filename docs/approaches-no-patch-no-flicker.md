@@ -376,3 +376,16 @@ Test (co má potvrdit):
    pochvy vanilla.
 10. Až po testech: rozšíření na pochvu, jejíž mod není nainstalovaný (řádek s vymyšleným jménem
     v `scabbards.txt`), rozhodne, jestli může být seznam modových pochev v jednom souboru.
+
+### Doplněk 12. 9. 2026
+
+- Manticora má vlastní neviditelný item `dsc_*_manticore` a šablonu `witcher_*_wolf_scabbard_ep2`
+  z Blood and Wine, tedy tu, kterou váží mantikoří meče ve vanille. 16 itemů, 8 variant na pochvu.
+- Seznam doplněn o pochvy modu Sezon Burz Witcher's Gear (`sezonburzsteelscabbard`,
+  `sezonburzsilverscabbard`, vlastní `.w2ent` v `dlc\sezonburz`). Když mod není nainstalovaný, je to
+  zároveň test bodu 10 (rozšíření na neznámou definici).
+- `HandleScabbardUpdate` volá `SetScabbards` i v inventáři (náhled ukazuje namountované itemy).
+  Odklad do zavření menu z 2.0.0 neměl v historii zdůvodnění, zůstal jen pro nastavení a WPIAO.
+  Bez meče v slotu se školní item nechává, aby výměna meče v menu nedělala odebrání a přidání.
+- Scéna kámen, nůžky, papír s Ciri: vanilla pochvy během scény, po scéně správně. Diagnostika v
+  `modDSTest` (záznamy na začátku a konci scény do `user.settings`, `ds_last()`), čeká na data.

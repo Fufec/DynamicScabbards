@@ -6,7 +6,7 @@ Reads tools/scabbards.txt and writes
   bundle_src/gameplay/items_plus/dynamic_scabbards.xml  (New Game+)
 Both files are UTF-16 with BOM and CRLF, the same as the vanilla item XML.
 
-The file defines 14 invisible items (one per school and sword category) and, for every
+The file defines 16 invisible items (one per school and sword category) and, for every
 scabbard definition in the list, an item_extension with one variant per school: when the
 invisible item of a school is mounted, the engine spawns the bound scabbard of the sword
 from the school template instead of its own. Pack with tools/pack_bundle.sh afterwards.
@@ -25,7 +25,8 @@ SCHOOLS = [
     ('bear',       'witcher_steel_bear_scabbard',    'witcher_silver_bear_scabbard'),
     ('lynx',       'witcher_steel_lynx_scabbard',    'witcher_silver_lynx_scabbard'),
     ('gryphon',    'witcher_steel_gryphon_scabbard', 'witcher_silver_gryphon_scabbard'),
-    ('wolf',       'witcher_steel_wolf_scabbard',    'witcher_silver_wolf_scabbard'),   # dlc10; Manticore uses it too
+    ('wolf',       'witcher_steel_wolf_scabbard',    'witcher_silver_wolf_scabbard'),      # dlc10
+    ('manticore',  'witcher_steel_wolf_scabbard_ep2', 'witcher_silver_wolf_scabbard_ep2'), # Blood and Wine (Red Wolf School)
     ('viper',      'scabbard_steel_1_02',            'scabbard_silver_1_05'),
     ('netflix',    'witcher_steel_netflix_scabbard', 'witcher_silver_netflix_scabbard'),
 ]
