@@ -97,8 +97,6 @@ olgierd_sabre_curved_scabbard | steel_scabbards | BrothersInArms
 scabbard_steel_dol_blathanna | steel_scabbards | W3EE
 steel_blaviken_scabbard | steel_scabbards | W3EE
 
-sezonburzsteelscabbard | steel_scabbards | SezonBurz
-
 # --- silver_scabbards ---
 NPC Witcher Silver Sword Scabbard | silver_scabbards | vanilla
 scabbard_silver_1_01 | silver_scabbards | vanilla
@@ -140,4 +138,3 @@ scabbard_silver_zirael | silver_scabbards | vanilla
 Witcher Silver Sword Scabbard | silver_scabbards | vanilla
 scabbard_silver_dol_blathanna | silver_scabbards | W3EE
 silver_blaviken_scabbard | silver_scabbards | W3EE
-sezonburzsilverscabbard | silver_scabbards | SezonBurz

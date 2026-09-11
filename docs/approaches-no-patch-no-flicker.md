@@ -381,9 +381,9 @@ Test (co má potvrdit):
 
 - Manticora má vlastní neviditelný item `dsc_*_manticore` a šablonu `witcher_*_wolf_scabbard_ep2`
   z Blood and Wine, tedy tu, kterou váží mantikoří meče ve vanille. 16 itemů, 8 variant na pochvu.
-- Seznam doplněn o pochvy modu Sezon Burz Witcher's Gear (`sezonburzsteelscabbard`,
-  `sezonburzsilverscabbard`, vlastní `.w2ent` v `dlc\sezonburz`). Když mod není nainstalovaný, je to
-  zároveň test bodu 10 (rozšíření na neznámou definici).
+- Sezon Burz Witcher's Gear má vlastní pochvy `sezonburzsteelscabbard` / `sezonburzsilverscabbard`
+  (vlastní `.w2ent` v `dlc\sezonburz`) vázané na své meče. Do seznamu se nepřidávají, dokud o to
+  někdo nepožádá; bez rozšíření si meče nechají svou pochvu.
 - `HandleScabbardUpdate` volá `SetScabbards` i v inventáři (náhled ukazuje namountované itemy).
   Odklad do zavření menu z 2.0.0 neměl v historii zdůvodnění, zůstal jen pro nastavení a WPIAO.
   Bez meče v slotu se školní item nechává, aby výměna meče v menu nedělala odebrání a přidání.
