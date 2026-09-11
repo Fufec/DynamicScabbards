@@ -281,3 +281,52 @@ plus filtr `GetItemCategory(name) == 'steel_scabbards' / 'silver_scabbards'` vr�
 všechny definice pochev načtené v dané hře, včetně modových. Skript tak umí
 porovnat nahrané definice se seznamem, který rozšiřujeme, a nepokryté pochvy
 vypsat (exec pro hlášení chyb, případně jednorázová hláška).
+
+## Dodatek 2026-09-11 (2): průzkum AMM, Eternal Hunt a WPIAO
+
+Zdroje: AMM 4.04 (`modAMM/content/scripts/local/AMM.ws`, 6 435 řádků),
+Eternal Hunt (github apokryphus/eternal-hunt, `EH.ws` 176 k řádků + WeaponStuff),
+Wear Preview Items As Outfits (`modWearPreviewItemsAsOutfits`, 4 299 řádků).
+Dále znovu S&M (`swordscampfire.ws`), SOH (`weapons_carrying.ws`), SOHWC, AHW.
+
+**Všechny tři mody pracují se stejnými třemi primitivy jako DS 2.2.x:**
+`IncludeAppearanceTemplate`/`ExcludeAppearanceTemplate` na `CAppearanceComponent`
+hráče (AMM `GearToogle`, EH `AlternateSteelScabbardManage`: stejný seznam školních
+šablon jako DS), `CreateEntity` + `CreateAttachment` pro vlastní entity (EH
+zbraně, kopie přes `GetReadableName()`), a `SetHideInGame`/`SetVisible` na
+namountované item entitě (AMM `HideScabs`: `GetItemsByCategory` -> všechny
+entity kategorie -> `SetHideInGame(true)`, časovač 0,35 s po spawnu meče; EH
+`SteelSwordScabbardSetVisible` stejně přes `SetVisible`). Nikdo nemění šablonu
+ani mesh existující item entity. Nikdo nepoužívá varianty pro hráče.
+
+**WPIAO: `MountItem(id, toHand, force = true)` přidá další entitu bez vyhození
+ostatních itemů stejné kategorie** (komentář autora v `PreviewOutfitManager.ws`:
+"Adds a new entity without replacing others, stacking multiple items in the same
+category's internal stack"). `force = false` kategorii vylučuje. Interní stack
+se neukládá, po spawnu hráče se staví znovu, proto WPIAO po loadu remountuje.
+Skrývání dělá přes `@wrapMethod(CItemEntity) OnAttachmentUpdate` a časovač
+0,001 s (`SetHideInGame`), protože mapa id -> entita je hned po mountu zastaralá.
+Pro DS to znamená: náš item by mohl být namountovaný vedle bound pochvy (test 3
+z plánu, dosud nespuštěný). Vanilla pochvu je ale pořád nutné skrýt a mody ji
+pořád čtou, takže je to jen jiná podoba přístupu B (item místo appearance
+šablony), ne cesta bez zásahů.
+
+**Jak mody vybírají pochvu:** S&M i SOH projdou `GetAllItems`, filtrují
+kategorii a kopii vytvoří z první položky, která má entitu
+(`GetItemEntityUnsafe(...).GetReadableName()`); mesh skrývají u všech, které
+entitu mají. AHW, EH i AMM projdou `GetItemsByCategory` a skryjí/ukážou všechny
+entity kategorie. Při dvou namountovaných pochvách by tedy kopie S&M/SOH
+závisela na pořadí položek (řeší jen wrap `GetReadableName`), skrývání by
+fungovalo u všech.
+
+**Modové meče a pochvy:** BiA definuje `olgierd_sabre_curved_scabbard`, ale
+žádný hráčský meč ji neváže (Olgierdova šavle pro hráče má přes
+`player_override` vanilla `Sabre Scabbard 02`). Z nainstalovaných modů žádný
+hráčský meč neváže nevanilla pochvu. Meče s vlastní tvarovanou pochvou by DS
+stejně vylučoval (seznam `IsExcludedSteelSword` už obsahuje Olgierd Sabre,
+Ofir Sabre, Karabela apod.).
+
+**Závěr průzkumu:** žádný z prozkoumaných modů nenašel způsob, jak měnit
+šablonu namountované pochvy za běhu. Přístup A (varianty) zůstává jediný, který
+nepotřebuje skrývání ani wrapy. Force mount je jediný nový poznatek a patří
+k přístupu B.
