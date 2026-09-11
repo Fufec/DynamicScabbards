@@ -398,3 +398,7 @@ Test (co má potvrdit):
   volají `SetScabbards` rovnou.
 - Wrapy událostí (`OnBlockingSceneStarted`, `OnBlockingSceneEnded`) se píší bez návratového typu,
   kompilátor jinak hlásí "Event function cannot return implicit a value".
+- Bod 10 ověřen: `item_extension` na jméno, které žádná definice nemá (`ds_test_missing_scabbard`),
+  hra načte bez následků, itemy i ostatní rozšíření ze stejného souboru fungují. Seznam smí
+  obsahovat pochvy modů, které hráč nemá nainstalované.
+- Bez laga: deset přepnutí modu v nastavení za sebou nic nezpomalí.
