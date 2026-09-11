@@ -239,3 +239,45 @@ pro 8 pochev, které používáš). Postup po restartu je v předchozí zprávě
 - Nástroje ve `scratchpad`: `ugrep.py` (UTF-16 grep), `listbundle.py` (výpis položek bundlu),
   `w3/bundle2.py` (extrakce), rozbalené XML v `vanillaxml/`, `dlcxml/`, `othermods/`, `.reddlc` v
   `reddlc/` a `othermods/`.
+
+## Dodatek 2026-09-11: co ještě bylo prověřeno v `witcher3.exe`
+
+Řetězce v `bin/x64_dx12/witcher3.exe` (UTF-16) obsahují slovník XML parseru definic
+itemů i registrace nativních funkcí po třídách. Z toho plyne:
+
+**Slovník `<item>` a rozšíření.** Parser zná jen tyto uzly: `items`, `item`,
+`items_extensions`, `item_extension` (pouze atribut `name`), `variants`, `variant`
+(`equip_template`, `category`, `all`, děti `item` a `item_category`), `collapse`
+(`item_cond`, `category_cond`), `bound_items`, `player_override`,
+`player_override_extension`, `anim_switches`, `slot_items`, `base_abilities`,
+`recycling_parts`, `tags`. Rozšíření podle kategorie neexistuje: cílem rozšíření je
+vždy jméno definice. Atributy `<item>`, které vanilla XML nepoužívá, ale parser je
+zná: `appearance`, `color_variant`, `upgrade_based_template`, `hold_template`
+(použité u bomb a šipek). Nic z toho nemění cíl na úrovni kategorie.
+`player_override` vanilla používá jen pro jiné `bound_items` u hráče.
+
+**Nativní funkce, které skripty nedeklarují.** `CDrawableComponent` má navíc
+`EnableLightChannels` a `AreLightChannelsEnabled`. `CItemEntity` má jen
+`GetMeshComponent` a `GetParentEntity` a vlastnost `m_timeToDespawn`.
+`CMeshComponent` nemá žádnou nativní funkci, jen vlastnost `m_mesh`.
+`CAppearanceComponent`: `IncludeAppearanceTemplate`, `ExcludeAppearanceTemplate`,
+`ApplyAppearance`, `GetAppearance` (vše deklarované). Žádné `SetMesh`,
+`SetTemplate`, `SetItemEquipTemplate`, `ReloadDefinitions`.
+
+**Import vlastností.** Kompilátor má hlášku
+`Property '%ls' exists but was not imported from C++ code.`, takže `import var m_mesh`
+v modu nepomůže: vlastnost musí být exportovaná z C++. Podobně
+`Native function '%ls' was not exported from class '%ls' in C++ code.` a
+`Native class function '%ls' cannot be wrapped.`.
+
+**Závěr.** Jediný vstup do výběru šablony za běhu je stav namountovaných itemů
+(podmínky variant). Cíl varianty je vždy jméno definice pochvy, načtené při
+startu. Hypotetická API, která by problém řešila úplně dynamicky (hook na výběr
+šablony při mountu, `SetItemEquipTemplate(itemId, ...)`, `SetMesh` na komponentě,
+rozšíření podle kategorie), v enginu nejsou.
+
+**Samodiagnostika pokrytí.** `CDefinitionsManagerAccessor.GetItemsWithTag('EncumbranceOff')`
+plus filtr `GetItemCategory(name) == 'steel_scabbards' / 'silver_scabbards'` vrátí
+všechny definice pochev načtené v dané hře, včetně modových. Skript tak umí
+porovnat nahrané definice se seznamem, který rozšiřujeme, a nepokryté pochvy
+vypsat (exec pro hlášení chyb, případně jednorázová hláška).
