@@ -49,12 +49,12 @@ class DynamicScabbards
     // item mounted, one per category; the engine handles every draw, load, scene and fast travel
     public function GetSteelSchoolItemCategory() : name
     {
-        return 'dsc_steel';
+        return 'ds_steel';
     }
 
     public function GetSilverSchoolItemCategory() : name
     {
-        return 'dsc_silver';
+        return 'ds_silver';
     }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
@@ -128,14 +128,14 @@ class DynamicScabbards
     {
         switch (school)
         {
-            case DS_Set_KaerMorhen:        return 'dsc_steel_kaermorhen';
-            case DS_Set_Bear:              return 'dsc_steel_bear';
-            case DS_Set_Cat:               return 'dsc_steel_lynx';
-            case DS_Set_Griffin:           return 'dsc_steel_gryphon';
-            case DS_Set_Manticore:         return 'dsc_steel_manticore';
-            case DS_Set_Wolf:              return 'dsc_steel_wolf';
-            case DS_Set_Viper:             return 'dsc_steel_viper';
-            case DS_Set_ForgottenWolf:     return 'dsc_steel_netflix';
+            case DS_Set_KaerMorhen:        return 'ds_steel_kaermorhen';
+            case DS_Set_Bear:              return 'ds_steel_bear';
+            case DS_Set_Cat:               return 'ds_steel_lynx';
+            case DS_Set_Griffin:           return 'ds_steel_gryphon';
+            case DS_Set_Manticore:         return 'ds_steel_manticore';
+            case DS_Set_Wolf:              return 'ds_steel_wolf';
+            case DS_Set_Viper:             return 'ds_steel_viper';
+            case DS_Set_ForgottenWolf:     return 'ds_steel_netflix';
             default:                       return '';
         }
     }
@@ -144,14 +144,14 @@ class DynamicScabbards
     {
         switch (school)
         {
-            case DS_Set_KaerMorhen:        return 'dsc_silver_kaermorhen';
-            case DS_Set_Bear:              return 'dsc_silver_bear';
-            case DS_Set_Cat:               return 'dsc_silver_lynx';
-            case DS_Set_Griffin:           return 'dsc_silver_gryphon';
-            case DS_Set_Manticore:         return 'dsc_silver_manticore';
-            case DS_Set_Wolf:              return 'dsc_silver_wolf';
-            case DS_Set_Viper:             return 'dsc_silver_viper';
-            case DS_Set_ForgottenWolf:     return 'dsc_silver_netflix';
+            case DS_Set_KaerMorhen:        return 'ds_silver_kaermorhen';
+            case DS_Set_Bear:              return 'ds_silver_bear';
+            case DS_Set_Cat:               return 'ds_silver_lynx';
+            case DS_Set_Griffin:           return 'ds_silver_gryphon';
+            case DS_Set_Manticore:         return 'ds_silver_manticore';
+            case DS_Set_Wolf:              return 'ds_silver_wolf';
+            case DS_Set_Viper:             return 'ds_silver_viper';
+            case DS_Set_ForgottenWolf:     return 'ds_silver_netflix';
             default:                       return '';
         }
     }

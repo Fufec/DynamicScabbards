@@ -389,3 +389,6 @@ Test (co má potvrdit):
   Bez meče v slotu se školní item nechává, aby výměna meče v menu nedělala odebrání a přidání.
 - Scéna kámen, nůžky, papír s Ciri: vanilla pochvy během scény, po scéně správně. Diagnostika v
   `modDSTest` (záznamy na začátku a konci scény do `user.settings`, `ds_last()`), čeká na data.
+- Neviditelné itemy a jejich kategorie přejmenovány z `dsc_` na `ds_` (`ds_steel_lynx`, kategorie
+  `ds_steel`, `ds_silver`). Itemy `dsc_*` ze starých testovacích savů zůstanou bez definice, což je
+  zároveň test bodu 9.

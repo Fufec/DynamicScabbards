@@ -30,7 +30,7 @@ SCHOOLS = [
     ('viper',      'scabbard_steel_1_02',            'scabbard_silver_1_05'),
     ('netflix',    'witcher_steel_netflix_scabbard', 'witcher_silver_netflix_scabbard'),
 ]
-CATEGORY = {'steel_scabbards': ('dsc_steel', 1), 'silver_scabbards': ('dsc_silver', 2)}
+CATEGORY = {'steel_scabbards': ('steel', 1), 'silver_scabbards': ('silver', 2)}  # (kind, template column)
 
 
 def read_list(path):
@@ -49,19 +49,19 @@ def read_list(path):
 def build(items):
     out = ['<?xml version="1.0" encoding="UTF-16"?>', '<redxml>', '\t<definitions>', '\t\t<items>']
     out.append('\t\t\t<!-- invisible items: the mounted one tells the engine which school scabbard to spawn -->')
-    for cat, (dsc_cat, _) in CATEGORY.items():
+    for cat, (kind, _) in CATEGORY.items():
         for school, _, _ in SCHOOLS:
-            out.append('\t\t\t<item name="dsc_%s_%s" category="%s" equip_template="" attachment_type="skinning">'
-                       '<tags>NoShow,NoDrop,EncumbranceOff</tags></item>' % (dsc_cat[4:], school, dsc_cat))
+            out.append('\t\t\t<item name="ds_%s_%s" category="ds_%s" equip_template="" attachment_type="skinning">'
+                       '<tags>NoShow,NoDrop,EncumbranceOff</tags></item>' % (kind, school, kind))
     out.append('\t\t</items>')
     out.append('\t\t<items_extensions>')
     for name, cat in items:
-        dsc_cat, idx = CATEGORY[cat]
+        kind, idx = CATEGORY[cat]
         out.append('\t\t\t<item_extension name="%s">' % name)
         out.append('\t\t\t\t<variants>')
         for row in SCHOOLS:
-            out.append('\t\t\t\t\t<variant equip_template="%s"><item>dsc_%s_%s</item></variant>'
-                       % (row[idx], dsc_cat[4:], row[0]))
+            out.append('\t\t\t\t\t<variant equip_template="%s"><item>ds_%s_%s</item></variant>'
+                       % (row[idx], kind, row[0]))
         out.append('\t\t\t\t</variants>')
         out.append('\t\t\t</item_extension>')
     out.append('\t\t</items_extensions>')
