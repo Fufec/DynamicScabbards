@@ -174,9 +174,9 @@ class DynamicScabbards
         return ids.Size() == 1 && inv.GetItemName(ids[0]) == item_name && inv.IsItemMounted(ids[0]);
     }
 
-    // keeps exactly one school item of the category mounted, '' means none. Returns false when the
-    // item definition is missing (the bundle of the mod is not installed)
-    function SetSchoolItem(category : name, item_name : name) : bool
+    // keeps exactly one school item of the category mounted. Returns false when the item definition
+    // is missing (the bundle of the mod is not installed)
+    function MountSchoolItem(category : name, item_name : name) : bool
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -187,11 +187,6 @@ class DynamicScabbards
         }
 
         RemoveSchoolItems(category);
-
-        if (!IsNameValid(item_name))
-        {
-            return true;
-        }
 
         inv = thePlayer.GetInventory();
         ids = inv.AddAnItem(item_name, 1, true, true);
@@ -219,11 +214,11 @@ class DynamicScabbards
 
         if (!inv.IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(sword_steel))
         {
-            SetSchoolItem(GetSteelSchoolItemCategory(), '');
+            RemoveSchoolItems(GetSteelSchoolItemCategory());
             return;
         }
 
-        SetSchoolItem(GetSteelSchoolItemCategory(), GetSteelSchoolItemName(school));
+        MountSchoolItem(GetSteelSchoolItemCategory(), GetSteelSchoolItemName(school));
     }
 
     public function UpdateSilverScabbard(school : DSSchoolSet)
@@ -240,18 +235,18 @@ class DynamicScabbards
 
         if (!inv.IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(sword_silver))
         {
-            SetSchoolItem(GetSilverSchoolItemCategory(), '');
+            RemoveSchoolItems(GetSilverSchoolItemCategory());
             return;
         }
 
-        SetSchoolItem(GetSilverSchoolItemCategory(), GetSilverSchoolItemName(school));
+        MountSchoolItem(GetSilverSchoolItemCategory(), GetSilverSchoolItemName(school));
     }
 
     // without a school item the bound scabbards spawn from their own templates
     public function RestoreVanillaScabbards()
     {
-        SetSchoolItem(GetSteelSchoolItemCategory(), '');
-        SetSchoolItem(GetSilverSchoolItemCategory(), '');
+        RemoveSchoolItems(GetSteelSchoolItemCategory());
+        RemoveSchoolItems(GetSilverSchoolItemCategory());
     }
 
     // Set detection: full-set or chestplate-only mode based on chestplate_mode setting
@@ -322,6 +317,24 @@ class DynamicScabbards
             }
         }
         
+        return false;
+    }
+
+    // only the sword and armor slots matter; in chestplate mode gloves, pants and boots do not
+    public function TriggersScabbardUpdate(slot : EEquipmentSlots) : bool
+    {
+        switch (slot)
+        {
+            case EES_SteelSword:
+            case EES_SilverSword:
+            case EES_Armor:
+                return true;
+            case EES_Boots:
+            case EES_Pants:
+            case EES_Gloves:
+                return !chestplate_mode;
+        }
+
         return false;
     }
 
@@ -454,8 +467,8 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
     }
 
     // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
-    // the equipped sword and armor right away. Cheap: usually the right item is already mounted
-    if (thePlayer.IsDynamicScabbardsEnabled())
+    // the equipped sword and armor right away
+    if (thePlayer.IsDynamicScabbardsEnabled() && thePlayer.ds.TriggersScabbardUpdate(slot))
     {
         thePlayer.ds.SetScabbards();
     }
@@ -476,8 +489,8 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
     }
 
     // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
-    // the equipped sword and armor right away. Cheap: usually the right item is already mounted
-    if (thePlayer.IsDynamicScabbardsEnabled())
+    // the equipped sword and armor right away
+    if (thePlayer.IsDynamicScabbardsEnabled() && thePlayer.ds.TriggersScabbardUpdate(slot))
     {
         thePlayer.ds.SetScabbards();
     }
