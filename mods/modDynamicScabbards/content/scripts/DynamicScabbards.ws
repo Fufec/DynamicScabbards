@@ -1,19 +1,20 @@
 enum DSSchoolSet
 {
-    DS_Set_KaerMorhen,
-    DS_Set_Bear,
-    DS_Set_Cat,
-    DS_Set_Griffin,
-    DS_Set_Manticore,
-    DS_Set_Wolf,
-    DS_Set_Viper,
-    DS_Set_ForgottenWolf
+    DS_Set_KaerMorhen = 1,
+    DS_Set_Bear = 2,
+    DS_Set_Cat = 3,
+    DS_Set_Griffin = 4,
+    DS_Set_Manticore = 5,
+    DS_Set_Wolf = 6,
+    DS_Set_Viper = 7,
+    DS_Set_ForgottenWolf = 8
 }
 
 class DynamicScabbards
 {
     var enabled : bool; // mod enabled
     var chestplate_mode : bool; // if true, only chestplate armor piece will be required for the swap to occur
+    var school_mode : int; // if > 0, a fixed value in DSSchoolSet to use
 
     var update_pending : bool; // true if a sword or an armor has been changed/unequipped
     default update_pending = false;
@@ -34,6 +35,11 @@ class DynamicScabbards
     public function SetChestplateMode(value : bool) 
     { 
         chestplate_mode = value; 
+    }
+
+    public function SetSchoolMode(value : int)
+    {
+        school_mode = value;
     }
 
     public function SetPendingUpdate(value: bool)
@@ -330,7 +336,12 @@ class DynamicScabbards
         witcher = GetWitcherPlayer();
         inv = thePlayer.GetInventory();
 
-        if (chestplate_mode)
+        if (school_mode > 0)
+        {
+            school = school_mode;
+            return true;
+        }
+        else if (chestplate_mode)
         {
             // only read chestplate armor piece
             if (witcher.GetItemEquippedOnSlot(EES_Armor, armor))
@@ -431,6 +442,7 @@ public function InitDS()
 
     var enabledValue: string;
     var chestModeValue: string;
+    var schoolModeValue : string;
 
     var inGameConfig: CInGameConfigWrapper;
 
@@ -441,6 +453,7 @@ public function InitDS()
     {
         inGameConfig.SetVarValue('DSOptions', 'DSEnabled', true);
         inGameConfig.SetVarValue('DSOptions', 'DSModeChestplate', false);
+        inGameConfig.SetVarValue('DSOptions', 'DSModeSchool', 0);
         inGameConfig.SetVarValue('DSOptions', 'DSVersion', currentVersion);
         theGame.SaveUserSettings();
     }
@@ -449,11 +462,12 @@ public function InitDS()
         inGameConfig.SetVarValue('DSOptions', 'DSVersion', currentVersion);
         theGame.SaveUserSettings();
     }
-    
+
     // Load settings with fallbacks for missing XML
     enabledValue = inGameConfig.GetVarValue('DSOptions', 'DSEnabled');
     chestModeValue = inGameConfig.GetVarValue('DSOptions', 'DSModeChestplate');
-    
+    schoolModeValue = inGameConfig.GetVarValue('DSOptions', 'DSModeSchool');
+
     if (enabledValue != "")
     {
         this.ds.SetEnabled(enabledValue);
@@ -462,7 +476,16 @@ public function InitDS()
     {
         this.ds.SetEnabled(true); // missing xml defaults to enabling the mod
     }
-    
+
+    if (schoolModeValue != "")
+    {
+        this.ds.SetSchoolMode(StringToInt(schoolModeValue));
+    }
+    else
+    {
+        this.ds.SetSchoolMode(0);
+    }
+
     if (chestModeValue != "")
     {
         this.ds.SetChestplateMode(chestModeValue);
@@ -697,9 +720,13 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
             thePlayer.ds.SetEnabled(modEnabled);
             thePlayer.ds.SetScabbards();
             UpdateDSChestplateSettings(!modEnabled);
-
             break;
-            
+
+        case 'DSModeSchool':
+            thePlayer.ds.SetSchoolMode(StringToInt(inGameConfig.GetVarValue(groupName, 'DSModeSchool')));
+            thePlayer.ds.SetPendingUpdate(true);
+            break;
+
         case 'DSModeChestplate':
             thePlayer.ds.SetChestplateMode(inGameConfig.GetVarValue(groupName, 'DSModeChestplate'));
             thePlayer.ds.SetPendingUpdate(true);
