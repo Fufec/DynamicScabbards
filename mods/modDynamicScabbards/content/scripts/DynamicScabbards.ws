@@ -43,12 +43,9 @@ class DynamicScabbards
     }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
-    function IsExcludedSteelSword(sword : SItemUniqueId) : bool
+    function IsExcludedSteelSword(sword : name) : bool
     {
-        var current : name;
-        current = thePlayer.GetInventory().GetItemName(sword);
-
-        switch (current)
+        switch (sword)
         {
             case 'Princessxenthiasword':
             case 'Princessxenthiasword_crafted':
@@ -86,12 +83,9 @@ class DynamicScabbards
         return false;
     }
 
-    function IsExcludedSilverSword(sword : SItemUniqueId) : bool
+    function IsExcludedSilverSword(sword : name) : bool
     {
-        var current : name;
-        current = thePlayer.GetInventory().GetItemName(sword);
-
-        switch (current)
+        switch (sword)
         {
             case 'Silver Vixen':
             case 'Netflix silver sword':
@@ -198,6 +192,7 @@ class DynamicScabbards
     {
         var inv : CInventoryComponent;
         var sword_steel : SItemUniqueId;
+        var sword_name : name;
 
         inv = thePlayer.GetInventory();
 
@@ -206,7 +201,9 @@ class DynamicScabbards
             return; // no sword, keep the school item
         }
 
-        if (!inv.IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(sword_steel))
+        sword_name = inv.GetItemName(sword_steel);
+
+        if (!inv.IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(sword_name))
         {
             RemoveSchoolItems(GetSteelSchoolItemCategory());
             return;
@@ -219,6 +216,7 @@ class DynamicScabbards
     {
         var inv : CInventoryComponent;
         var sword_silver : SItemUniqueId;
+        var sword_name : name;
 
         inv = thePlayer.GetInventory();
 
@@ -227,7 +225,9 @@ class DynamicScabbards
             return; // no sword, keep the school item
         }
 
-        if (!inv.IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(sword_silver))
+        sword_name = inv.GetItemName(sword_silver);
+
+        if (!inv.IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(sword_name))
         {
             RemoveSchoolItems(GetSilverSchoolItemCategory());
             return;
