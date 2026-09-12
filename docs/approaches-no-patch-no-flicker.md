@@ -402,3 +402,10 @@ Test (co má potvrdit):
   hra načte bez následků, itemy i ostatní rozšíření ze stejného souboru fungují. Seznam smí
   obsahovat pochvy modů, které hráč nemá nainstalované.
 - Bez laga: deset přepnutí modu v nastavení za sebou nic nezpomalí.
+- Scéna kámen, nůžky, papír vyřešena: hra sundá rukavice (`UnequipItemFromSlot(EES_Gloves)` mimo menu
+  a mimo scénu), v režimu celé sady tím sada není celá a skript školní itemy odebere; po vrácení
+  rukavic je přidá. Varianty ve scéně fungují, pochva byla školní od začátku scény.
+- Návrat z Ciri na Geralta funguje bez hooku (item je v inventáři a namountovaný). Pro instalaci
+  modu během hraní za Ciri přidán hook na `CR4Game.OnPlayerChanged`, který C++ volá po výměně hráče.
+- Zamrzání při změnách výbavy dělal jen testovací mod (`SaveUserSettings` při každém záznamu).
+

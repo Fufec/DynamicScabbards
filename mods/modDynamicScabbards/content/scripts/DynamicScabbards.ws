@@ -458,6 +458,19 @@ function OnAfterLoadingScreenGameStart()
     }
 }
 
+// the player changed (to Ciri and back): Geralt comes back with his inventory and the school item
+// still mounted. This matters only when the mod was installed or updated while playing as Ciri
+@wrapMethod(CR4Game)
+function OnPlayerChanged()
+{
+    wrappedMethod();
+
+    if (thePlayer.IsDynamicScabbardsEnabled())
+    {
+        thePlayer.ds.SetScabbards();
+    }
+}
+
 @wrapMethod(W3PlayerWitcher)
 function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, ignoreMounting : bool, optional toHand : bool) : bool
 {
