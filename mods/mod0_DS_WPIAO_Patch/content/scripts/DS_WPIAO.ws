@@ -92,3 +92,36 @@ function UnSetOutfitItem(slot : EEquipmentSlots, optional removeFromSet : bool) 
 
     return result;
 }
+
+// WPIAO wraps the same equip functions as Dynamic Scabbards and turns the outfit of the slot off before
+// the change and on again at the very end; the mod's own hook runs in between and sees the outfit off,
+// so decide again once WPIAO is done
+@wrapMethod(WPIAO_PreviewOutfitManager)
+function PostWitcherEquip(result : bool, item : SItemUniqueId, slot : EEquipmentSlots, ignoreMounting : bool, optional toHand : bool) : bool
+{
+    var equipped : bool;
+
+    equipped = wrappedMethod(result, item, slot, ignoreMounting, toHand);
+
+    if (equipped)
+    {
+        thePlayer.GetDynamicScabbards().OnEquipmentChanged(slot);
+    }
+
+    return equipped;
+}
+
+@wrapMethod(WPIAO_PreviewOutfitManager)
+function PostWitcherUnEquip(result : bool, item : SItemUniqueId, slot : EEquipmentSlots, optional reequipped : bool) : bool
+{
+    var unequipped : bool;
+
+    unequipped = wrappedMethod(result, item, slot, reequipped);
+
+    if (unequipped)
+    {
+        thePlayer.GetDynamicScabbards().OnEquipmentChanged(slot);
+    }
+
+    return unequipped;
+}
