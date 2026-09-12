@@ -196,7 +196,7 @@ class DynamicScabbards
 
         inv = thePlayer.GetInventory();
 
-        if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
+        if (!inv.GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
         {
             return; // no sword, keep the school item
         }
@@ -220,7 +220,7 @@ class DynamicScabbards
 
         inv = thePlayer.GetInventory();
 
-        if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
+        if (!inv.GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
         {
             return; // no sword, keep the school item
         }
@@ -285,16 +285,14 @@ class DynamicScabbards
         var pants : SItemUniqueId;
         var boots : SItemUniqueId;
 
-        var witcher : W3PlayerWitcher;
         var inv : CInventoryComponent;
 
-        witcher = GetWitcherPlayer();
         inv = thePlayer.GetInventory();
 
         if (chestplate_mode)
         {
             // only read chestplate armor piece
-            if (witcher.GetItemEquippedOnSlot(EES_Armor, armor))
+            if (inv.GetItemEquippedOnSlot(EES_Armor, armor))
             {
                 return GetSchoolFromArmor(inv.GetItemName(armor), '', '', '', school);
             }
@@ -302,10 +300,10 @@ class DynamicScabbards
         else
         {
             // all pieces must be equipped
-            if (witcher.GetItemEquippedOnSlot(EES_Armor, armor)   && 
-                witcher.GetItemEquippedOnSlot(EES_Gloves, gloves) && 
-                witcher.GetItemEquippedOnSlot(EES_Pants, pants)   && 
-                witcher.GetItemEquippedOnSlot(EES_Boots, boots))
+            if (inv.GetItemEquippedOnSlot(EES_Armor, armor)   && 
+                inv.GetItemEquippedOnSlot(EES_Gloves, gloves) && 
+                inv.GetItemEquippedOnSlot(EES_Pants, pants)   && 
+                inv.GetItemEquippedOnSlot(EES_Boots, boots))
             {
                 return GetSchoolFromArmor(inv.GetItemName(armor), inv.GetItemName(gloves), inv.GetItemName(pants), inv.GetItemName(boots), school);
             }
