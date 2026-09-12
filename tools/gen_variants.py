@@ -1,82 +1,56 @@
 #!/usr/bin/env python3
-"""Generates the item definitions of Dynamic Scabbards (mod bundle XML).
+"""Generates bundle_src/gameplay/items{,_plus}/dynamic_scabbards.xml from tools/scabbards.toml.
 
-Reads tools/scabbards.toml and writes
-  bundle_src/gameplay/items/dynamic_scabbards.xml       (regular game)
-  bundle_src/gameplay/items_plus/dynamic_scabbards.xml  (New Game+)
-Both files are UTF-16 with BOM and CRLF, the same as the vanilla item XML.
-
-The file defines 16 invisible items (one per school and sword category) and, for every
-scabbard definition in the list, an item_extension with one variant per school: when the
-invisible item of a school is mounted, the engine spawns the bound scabbard of the sword
-from the school template instead of its own. Pack with tools/pack_bundle.sh afterwards.
+Every listed scabbard definition gets an item_extension with one variant per witcher school:
+while the invisible marker item of that school is mounted, the engine spawns the sword's bound
+scabbard from the school template instead of its own. Pack with tools/pack_bundle.sh afterwards.
 """
-import os, sys, tomllib
+import tomllib
+import xml.etree.ElementTree as ET
+from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LIST = os.path.join(ROOT, 'tools', 'scabbards.toml')
-OUT = [os.path.join(ROOT, 'bundle_src', 'gameplay', 'items', 'dynamic_scabbards.xml'),
-       os.path.join(ROOT, 'bundle_src', 'gameplay', 'items_plus', 'dynamic_scabbards.xml')]
+ROOT = Path(__file__).resolve().parent.parent
 
-# school -> (steel template, silver template); the templates of the vanilla school scabbards
-# scabbard_steel_1_01, scabbard_steel_bear_01, ... (see DynamicScabbards.ws GetSteelMarker)
-SCHOOLS = [
-    ('kaermorhen', 'scabbard_steel_1_01',            'scabbard_silver_1_01'),
-    ('bear',       'witcher_steel_bear_scabbard',    'witcher_silver_bear_scabbard'),
-    ('lynx',       'witcher_steel_lynx_scabbard',    'witcher_silver_lynx_scabbard'),
-    ('gryphon',    'witcher_steel_gryphon_scabbard', 'witcher_silver_gryphon_scabbard'),
-    ('wolf',       'witcher_steel_wolf_scabbard',    'witcher_silver_wolf_scabbard'),      # dlc10
-    ('manticore',  'witcher_steel_wolf_scabbard_ep2', 'witcher_silver_wolf_scabbard_ep2'), # Blood and Wine (Red Wolf School)
-    ('viper',      'scabbard_steel_1_02',            'scabbard_silver_1_05'),
-    ('netflix',    'witcher_steel_netflix_scabbard', 'witcher_silver_netflix_scabbard'),
-]
-CATEGORY = {'steel_scabbards': ('steel', 1), 'silver_scabbards': ('silver', 2)}  # (kind, template column)
+# templates of the vanilla school scabbards, see GetSteelMarker/GetSilverMarker in DynamicScabbards.ws
+SCHOOLS = {
+    'kaermorhen': dict(steel='scabbard_steel_1_01',              silver='scabbard_silver_1_01'),
+    'bear':       dict(steel='witcher_steel_bear_scabbard',      silver='witcher_silver_bear_scabbard'),
+    'lynx':       dict(steel='witcher_steel_lynx_scabbard',      silver='witcher_silver_lynx_scabbard'),
+    'gryphon':    dict(steel='witcher_steel_gryphon_scabbard',   silver='witcher_silver_gryphon_scabbard'),
+    'wolf':       dict(steel='witcher_steel_wolf_scabbard',      silver='witcher_silver_wolf_scabbard'),      # dlc10
+    'manticore':  dict(steel='witcher_steel_wolf_scabbard_ep2',  silver='witcher_silver_wolf_scabbard_ep2'),  # Blood and Wine, Red Wolf School
+    'viper':      dict(steel='scabbard_steel_1_02',              silver='scabbard_silver_1_05'),
+    'netflix':    dict(steel='witcher_steel_netflix_scabbard',   silver='witcher_silver_netflix_scabbard'),
+}
+KINDS = {'steel_scabbards': 'steel', 'silver_scabbards': 'silver'}  # scabbard category -> marker kind
 
+scabbards = tomllib.loads((ROOT / 'tools' / 'scabbards.toml').read_text('utf-8'))
 
-def read_list(path):
-    # [steel_scabbards] / [silver_scabbards] tables: "definition name" = "origin"
-    with open(path, 'rb') as f:
-        tables = tomllib.load(f)
-    items = []
-    for cat, names in tables.items():
-        if cat not in CATEGORY:
-            sys.exit('unknown table [%s] in %s' % (cat, path))
-        items.extend((name, cat) for name in names)
-    return items
+root = ET.Element('redxml')
+definitions = ET.SubElement(root, 'definitions')
 
+items = ET.SubElement(definitions, 'items')
+items.append(ET.Comment(' invisible markers: the mounted one tells the engine which school scabbard to spawn '))
+for kind in KINDS.values():
+    for school in SCHOOLS:
+        item = ET.SubElement(items, 'item', name=f'ds_{kind}_{school}', category=f'ds_{kind}',
+                             equip_template='', attachment_type='skinning')
+        ET.SubElement(item, 'tags').text = 'NoShow,NoDrop,EncumbranceOff'
 
-def build(items):
-    out = ['<?xml version="1.0" encoding="UTF-16"?>', '<redxml>', '\t<definitions>', '\t\t<items>']
-    out.append('\t\t\t<!-- invisible items: the mounted one tells the engine which school scabbard to spawn -->')
-    for cat, (kind, _) in CATEGORY.items():
-        for school, _, _ in SCHOOLS:
-            out.append('\t\t\t<item name="ds_%s_%s" category="ds_%s" equip_template="" attachment_type="skinning">'
-                       '<tags>NoShow,NoDrop,EncumbranceOff</tags></item>' % (kind, school, kind))
-    out.append('\t\t</items>')
-    out.append('\t\t<items_extensions>')
-    for name, cat in items:
-        kind, idx = CATEGORY[cat]
-        out.append('\t\t\t<item_extension name="%s">' % name)
-        out.append('\t\t\t\t<variants>')
-        for row in SCHOOLS:
-            out.append('\t\t\t\t\t<variant equip_template="%s"><item>ds_%s_%s</item></variant>'
-                       % (row[idx], kind, row[0]))
-        out.append('\t\t\t\t</variants>')
-        out.append('\t\t\t</item_extension>')
-    out.append('\t\t</items_extensions>')
-    out += ['\t</definitions>', '</redxml>', '']
-    return '\r\n'.join(out)
+extensions = ET.SubElement(definitions, 'items_extensions')
+for category, names in scabbards.items():
+    kind = KINDS[category]
+    for name in names:
+        variants = ET.SubElement(ET.SubElement(extensions, 'item_extension', name=name), 'variants')
+        for school, templates in SCHOOLS.items():
+            variant = ET.SubElement(variants, 'variant', equip_template=templates[kind])
+            ET.SubElement(variant, 'item').text = f'ds_{kind}_{school}'
 
+ET.indent(root, '\t')
+xml = '<?xml version="1.0" encoding="UTF-16"?>\n' + ET.tostring(root, encoding='unicode') + '\n'
+for folder in ('items', 'items_plus'):
+    out = ROOT / 'bundle_src' / 'gameplay' / folder / 'dynamic_scabbards.xml'
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(xml.replace('\n', '\r\n').encode('utf-16'))  # BOM and CRLF like the vanilla item XML
 
-def main():
-    items = read_list(LIST)
-    xml = build(items)
-    for path in OUT:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, 'wb') as f:
-            f.write(xml.encode('utf-16'))  # utf-16 codec writes the BOM
-    print('%d scabbard definitions, %d schools -> %s' % (len(items), len(SCHOOLS), ', '.join(os.path.relpath(p, ROOT) for p in OUT)))
-
-
-if __name__ == '__main__':
-    main()
+print(f'{sum(map(len, scabbards.values()))} scabbards, {len(SCHOOLS)} schools -> bundle_src/')
