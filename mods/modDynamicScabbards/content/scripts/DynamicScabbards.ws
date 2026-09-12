@@ -258,7 +258,7 @@ class DynamicScabbards
         }
     }
 
-    // order matters: "Red Wolf" before "Wolf", vanilla names before Set Rework names
+    // order matters: "Red Wolf" contains "Wolf"
     function GetSchoolFromArmor(armor : name, gloves : name, pants : name, boots : name, out school: DSSchoolSet) : bool
     {
         if (MatchesSchool(armor, gloves, pants, boots, "Starting"))      { school = DS_Set_KaerMorhen;     return true;}
