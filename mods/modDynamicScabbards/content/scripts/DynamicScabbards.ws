@@ -103,6 +103,7 @@ class DynamicScabbards
         return false;
     }
 
+    // name of the invisible item of the school, defined in the bundle
     function GetSteelItemName(school: DSSchoolSet) : name
     {
         switch (school)
