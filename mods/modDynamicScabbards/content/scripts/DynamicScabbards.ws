@@ -251,9 +251,9 @@ class DynamicScabbards
         }
         else
         {
-            return (StrContains(armor, school_name) &&
+            return (StrContains(armor, school_name)  &&
                     StrContains(gloves, school_name) &&
-                    StrContains(pants, school_name) &&
+                    StrContains(pants, school_name)  &&
                     StrContains(boots, school_name));
         }
     }
