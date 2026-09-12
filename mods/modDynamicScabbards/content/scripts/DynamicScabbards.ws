@@ -188,20 +188,13 @@ class DynamicScabbards
         }
     }
 
-    function UpdateSteelScabbard()
+    function UpdateSteelScabbard(school : DSSchoolSet)
     {
         var inv : CInventoryComponent;
-        var school : DSSchoolSet;
         var sword_steel : SItemUniqueId;
         var steel_name : name;
 
         inv = thePlayer.GetInventory();
-
-        if (!enabled || !GetEquippedSchool(school))
-        {
-            ClearMarker(SteelCategory());
-            return;
-        }
 
         if (!inv.GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
         {
@@ -219,20 +212,13 @@ class DynamicScabbards
         SetMarker(SteelCategory(), GetSteelMarker(school));
     }
 
-    function UpdateSilverScabbard()
+    function UpdateSilverScabbard(school : DSSchoolSet)
     {
         var inv : CInventoryComponent;
-        var school : DSSchoolSet;
         var sword_silver : SItemUniqueId;
         var silver_name : name;
 
         inv = thePlayer.GetInventory();
-
-        if (!enabled || !GetEquippedSchool(school))
-        {
-            ClearMarker(SilverCategory());
-            return;
-        }
 
         if (!inv.GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
         {
@@ -248,6 +234,12 @@ class DynamicScabbards
         }
 
         SetMarker(SilverCategory(), GetSilverMarker(school));
+    }
+
+    function RestoreVanillaScabbards()
+    {
+        ClearMarker(SteelCategory());
+        ClearMarker(SilverCategory());
     }
 
     // Set detection: full-set or chestplate-only mode based on chestplate_mode setting
@@ -322,19 +314,10 @@ class DynamicScabbards
 
     public function OnEquipmentChanged(slot : EEquipmentSlots)
     {
-        if (!GetWitcherPlayer())
-        {
-            return;
-        }
-
         switch (slot)
         {
             case EES_SteelSword:
-                UpdateSteelScabbard();
-                return;
             case EES_SilverSword:
-                UpdateSilverScabbard();
-                return;
             case EES_Armor:
                 SetScabbards();
                 return;
@@ -352,13 +335,21 @@ class DynamicScabbards
 
     public function SetScabbards()
     {
+        var school : DSSchoolSet;
+
         if (!GetWitcherPlayer())
         {
             return;
         }
 
-        UpdateSteelScabbard();
-        UpdateSilverScabbard();
+        if (!enabled || !GetEquippedSchool(school))
+        {
+            RestoreVanillaScabbards();
+            return;
+        }
+
+        UpdateSteelScabbard(school);
+        UpdateSilverScabbard(school);
     }
 }
 
