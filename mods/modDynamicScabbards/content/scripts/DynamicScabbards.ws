@@ -251,9 +251,9 @@ class DynamicScabbards
         }
         else
         {
-            return (StrContains(armor, school_name) && 
-                    StrContains(gloves, school_name) && 
-                    StrContains(pants, school_name) && 
+            return (StrContains(armor, school_name) &&
+                    StrContains(gloves, school_name) &&
+                    StrContains(pants, school_name) &&
                     StrContains(boots, school_name));
         }
     }
@@ -300,9 +300,9 @@ class DynamicScabbards
         else
         {
             // all pieces must be equipped
-            if (inv.GetItemEquippedOnSlot(EES_Armor, armor)   && 
-                inv.GetItemEquippedOnSlot(EES_Gloves, gloves) && 
-                inv.GetItemEquippedOnSlot(EES_Pants, pants)   && 
+            if (inv.GetItemEquippedOnSlot(EES_Armor, armor)   &&
+                inv.GetItemEquippedOnSlot(EES_Gloves, gloves) &&
+                inv.GetItemEquippedOnSlot(EES_Pants, pants)   &&
                 inv.GetItemEquippedOnSlot(EES_Boots, boots))
             {
                 return GetSchoolFromArmor(inv.GetItemName(armor), inv.GetItemName(gloves), inv.GetItemName(pants), inv.GetItemName(boots), school);
