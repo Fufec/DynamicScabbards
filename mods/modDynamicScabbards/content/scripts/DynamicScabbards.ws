@@ -195,11 +195,6 @@ class DynamicScabbards
         var sword_steel : SItemUniqueId;
         var steel_name : name;
 
-        if (!GetWitcherPlayer())
-        {
-            return;
-        }
-
         inv = thePlayer.GetInventory();
 
         if (!enabled || !GetEquippedSchool(school))
@@ -230,11 +225,6 @@ class DynamicScabbards
         var school : DSSchoolSet;
         var sword_silver : SItemUniqueId;
         var silver_name : name;
-
-        if (!GetWitcherPlayer())
-        {
-            return;
-        }
 
         inv = thePlayer.GetInventory();
 
@@ -332,6 +322,11 @@ class DynamicScabbards
 
     public function OnEquipmentChanged(slot : EEquipmentSlots)
     {
+        if (!GetWitcherPlayer())
+        {
+            return;
+        }
+
         switch (slot)
         {
             case EES_SteelSword:
@@ -357,6 +352,11 @@ class DynamicScabbards
 
     public function SetScabbards()
     {
+        if (!GetWitcherPlayer())
+        {
+            return;
+        }
+
         UpdateSteelScabbard();
         UpdateSilverScabbard();
     }
