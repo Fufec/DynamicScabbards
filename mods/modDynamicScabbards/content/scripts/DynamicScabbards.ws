@@ -30,8 +30,8 @@ class DynamicScabbards
         chestplate_mode = value;
     }
 
-    // The bundle adds variants to every scabbard definition: while the invisible school item is mounted,
-    // the engine spawns the bound scabbard from the school template. The script only keeps the right item mounted
+    // the bundle adds variants to every scabbard definition: while the marker of a school is mounted,
+    // the engine spawns the bound scabbard from the school template. The script only keeps the right marker mounted
     function SteelCategory() : name
     {
         return 'ds_steel';
@@ -103,8 +103,8 @@ class DynamicScabbards
         return false;
     }
 
-    // name of the invisible item of the school, defined in the bundle
-    function GetSteelItemName(school: DSSchoolSet) : name
+    // the marker of the school: an invisible item defined in the bundle
+    function GetSteelMarker(school: DSSchoolSet) : name
     {
         switch (school)
         {
@@ -120,7 +120,7 @@ class DynamicScabbards
         }
     }
 
-    function GetSilverItemName(school: DSSchoolSet) : name
+    function GetSilverMarker(school: DSSchoolSet) : name
     {
         switch (school)
         {
@@ -136,7 +136,7 @@ class DynamicScabbards
         }
     }
 
-    function RemoveSchoolItems(category : name)
+    function ClearMarker(category : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -156,7 +156,7 @@ class DynamicScabbards
         }
     }
 
-    function IsSchoolItemMounted(category : name, item_name : name) : bool
+    function IsMarkerMounted(category : name, marker : name) : bool
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -164,24 +164,23 @@ class DynamicScabbards
         inv = thePlayer.GetInventory();
         ids = inv.GetItemsByCategory(category);
 
-        return ids.Size() == 1 && inv.GetItemName(ids[0]) == item_name && inv.IsItemMounted(ids[0]);
+        return ids.Size() == 1 && inv.GetItemName(ids[0]) == marker && inv.IsItemMounted(ids[0]);
     }
 
-    // AddAnItem returns nothing without the bundle
-    function EnsureSchoolItemMounted(category : name, item_name : name)
+    function SetMarker(category : name, marker : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
 
-        if (IsSchoolItemMounted(category, item_name))
+        if (IsMarkerMounted(category, marker))
         {
             return;
         }
 
-        RemoveSchoolItems(category);
+        ClearMarker(category);
 
         inv = thePlayer.GetInventory();
-        ids = inv.AddAnItem(item_name, 1, true, true);
+        ids = inv.AddAnItem(marker, 1, true, true);
 
         if (ids.Size() > 0)
         {
@@ -199,18 +198,18 @@ class DynamicScabbards
 
         if (!inv.GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
         {
-            return; // no sword, keep the school item
+            return; // no sword, keep the marker
         }
 
         steel_name = inv.GetItemName(sword_steel);
 
         if (!inv.IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(steel_name))
         {
-            RemoveSchoolItems(SteelCategory());
+            ClearMarker(SteelCategory());
             return;
         }
 
-        EnsureSchoolItemMounted(SteelCategory(), GetSteelItemName(school));
+        SetMarker(SteelCategory(), GetSteelMarker(school));
     }
 
     function UpdateSilverScabbard(school : DSSchoolSet)
@@ -223,24 +222,24 @@ class DynamicScabbards
 
         if (!inv.GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
         {
-            return; // no sword, keep the school item
+            return; // no sword, keep the marker
         }
 
         silver_name = inv.GetItemName(sword_silver);
 
         if (!inv.IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(silver_name))
         {
-            RemoveSchoolItems(SilverCategory());
+            ClearMarker(SilverCategory());
             return;
         }
 
-        EnsureSchoolItemMounted(SilverCategory(), GetSilverItemName(school));
+        SetMarker(SilverCategory(), GetSilverMarker(school));
     }
 
     function RestoreVanillaScabbards()
     {
-        RemoveSchoolItems(SteelCategory());
-        RemoveSchoolItems(SilverCategory());
+        ClearMarker(SteelCategory());
+        ClearMarker(SilverCategory());
     }
 
     // Set detection: full-set or chestplate-only mode based on chestplate_mode setting
