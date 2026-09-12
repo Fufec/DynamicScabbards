@@ -34,18 +34,18 @@ class DynamicScabbards
     // when the invisible item of a school is mounted, the engine spawns the bound scabbard of the
     // sword from the school template instead of its own. The script only keeps the right invisible
     // item mounted, one per category; the engine handles every draw, load, scene and fast travel
-    public function GetSteelSchoolItemCategory() : name
+    function GetSteelSchoolItemCategory() : name
     {
         return 'ds_steel';
     }
 
-    public function GetSilverSchoolItemCategory() : name
+    function GetSilverSchoolItemCategory() : name
     {
         return 'ds_silver';
     }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
-    public function IsExcludedSteelSword(sword : SItemUniqueId) : bool
+    function IsExcludedSteelSword(sword : SItemUniqueId) : bool
     {
         var current : name;
         current = thePlayer.GetInventory().GetItemName(sword);
@@ -88,7 +88,7 @@ class DynamicScabbards
         return false;
     }
 
-    public function IsExcludedSilverSword(sword : SItemUniqueId) : bool
+    function IsExcludedSilverSword(sword : SItemUniqueId) : bool
     {
         var current : name;
         current = thePlayer.GetInventory().GetItemName(sword);
@@ -111,7 +111,7 @@ class DynamicScabbards
         return false;
     }
 
-    public function GetSteelSchoolItemName(school: DSSchoolSet) : name
+    function GetSteelSchoolItemName(school: DSSchoolSet) : name
     {
         switch (school)
         {
@@ -127,7 +127,7 @@ class DynamicScabbards
         }
     }
 
-    public function GetSilverSchoolItemName(school: DSSchoolSet) : name
+    function GetSilverSchoolItemName(school: DSSchoolSet) : name
     {
         switch (school)
         {
@@ -174,16 +174,16 @@ class DynamicScabbards
         return ids.Size() == 1 && inv.GetItemName(ids[0]) == item_name && inv.IsItemMounted(ids[0]);
     }
 
-    // keeps exactly one school item of the category mounted. Returns false when the item definition
+    // keeps exactly one school item of the category mounted; nothing happens when the item definition
     // is missing (the bundle of the mod is not installed)
-    function EnsureSchoolItemMounted(category : name, item_name : name) : bool
+    function EnsureSchoolItemMounted(category : name, item_name : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
 
         if (IsSchoolItemMounted(category, item_name))
         {
-            return true; // the usual case
+            return; // the usual case
         }
 
         RemoveSchoolItems(category);
@@ -191,16 +191,13 @@ class DynamicScabbards
         inv = thePlayer.GetInventory();
         ids = inv.AddAnItem(item_name, 1, true, true);
 
-        if (ids.Size() == 0)
+        if (ids.Size() > 0)
         {
-            return false;
+            inv.MountItem(ids[0]);
         }
-
-        inv.MountItem(ids[0]);
-        return true;
     }
 
-    public function UpdateSteelScabbard(school : DSSchoolSet)
+    function UpdateSteelScabbard(school : DSSchoolSet)
     {
         var inv : CInventoryComponent;
         var sword_steel : SItemUniqueId;
@@ -221,7 +218,7 @@ class DynamicScabbards
         EnsureSchoolItemMounted(GetSteelSchoolItemCategory(), GetSteelSchoolItemName(school));
     }
 
-    public function UpdateSilverScabbard(school : DSSchoolSet)
+    function UpdateSilverScabbard(school : DSSchoolSet)
     {
         var inv : CInventoryComponent;
         var sword_silver : SItemUniqueId;
@@ -243,7 +240,7 @@ class DynamicScabbards
     }
 
     // without a school item the bound scabbards spawn from their own templates
-    public function RestoreVanillaScabbards()
+    function RestoreVanillaScabbards()
     {
         RemoveSchoolItems(GetSteelSchoolItemCategory());
         RemoveSchoolItems(GetSilverSchoolItemCategory());
@@ -265,6 +262,8 @@ class DynamicScabbards
         }
     }
 
+    // the order matters: StrContains matches a substring, so "Red Wolf" has to come before "Wolf"
+    // and the vanilla names before the names of the Witcher School Set Rework mod
     function GetSchoolFromArmor(armor : name, gloves : name, pants : name, boots : name, out school: DSSchoolSet) : bool
     {
         if (MatchesSchool(armor, gloves, pants, boots, "Starting"))      { school = DS_Set_KaerMorhen;     return true;}
@@ -482,7 +481,7 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
     return result;
 }
 
-// update the menu sfw for chestplate armor piece only setting. Disabling the options to interact with the menu when the mod is turned off prevents race conditions and exceptions
+// update the menu option for the chestplate armor piece only setting. Disabling the options to interact with the menu when the mod is turned off prevents race conditions and exceptions
 @addMethod(CR4IngameMenu)
 function UpdateChestplateModeOption(disabled : bool)
 {
@@ -520,9 +519,9 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
     groupName = inGameConfig.GetGroupName(groupId);
 
     if(groupName != 'DSOptions')
-	{
+    {
         return result;
-	}
+    }
 
     scabbards = thePlayer.GetDynamicScabbards();
 
