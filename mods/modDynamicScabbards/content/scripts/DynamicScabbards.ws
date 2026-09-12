@@ -176,7 +176,7 @@ class DynamicScabbards
 
     // keeps exactly one school item of the category mounted. Returns false when the item definition
     // is missing (the bundle of the mod is not installed)
-    function MountSchoolItem(category : name, item_name : name) : bool
+    function EnsureSchoolItemMounted(category : name, item_name : name) : bool
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -218,7 +218,7 @@ class DynamicScabbards
             return;
         }
 
-        MountSchoolItem(GetSteelSchoolItemCategory(), GetSteelSchoolItemName(school));
+        EnsureSchoolItemMounted(GetSteelSchoolItemCategory(), GetSteelSchoolItemName(school));
     }
 
     public function UpdateSilverScabbard(school : DSSchoolSet)
@@ -239,7 +239,7 @@ class DynamicScabbards
             return;
         }
 
-        MountSchoolItem(GetSilverSchoolItemCategory(), GetSilverSchoolItemName(school));
+        EnsureSchoolItemMounted(GetSilverSchoolItemCategory(), GetSilverSchoolItemName(school));
     }
 
     // without a school item the bound scabbards spawn from their own templates
