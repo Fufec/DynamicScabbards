@@ -1,6 +1,6 @@
 # Scabbard definitions that get the school variants (one per witcher school).
 # "definition name" = "origin"   origin is "vanilla" or the name of the mod that adds the scabbard.
-# Add a line, then run tools/gen_variants.py and tools/pack_bundle.sh.
+# Add a line, then run tools/gen_variants.py and tools/pack_bundle.py.
 
 [steel_scabbards]
 "Ciri Zireael Sword Scabbard" = "vanilla"

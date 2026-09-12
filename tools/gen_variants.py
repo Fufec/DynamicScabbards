@@ -3,7 +3,7 @@
 
 Every listed scabbard definition gets an item_extension with one variant per witcher school:
 while the invisible marker item of that school is mounted, the engine spawns the sword's bound
-scabbard from the school template instead of its own. Pack with tools/pack_bundle.sh afterwards.
+scabbard from the school template instead of its own. Pack with tools/pack_bundle.py afterwards.
 """
 import tomllib
 import xml.etree.ElementTree as ET

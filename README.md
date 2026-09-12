@@ -11,7 +11,7 @@ Nexus: <https://www.nexusmods.com/witcher3/mods/11253>
 | `mods/mod0_DS_WPIAO_Patch/` | Wear Preview Items As Outfits patch | `wpiao` |
 | `bin/` | menu config (`user_config_matrix`), ships with core | `core` |
 | `bundle_src/` | XML source of the bundle, generated | - |
-| `tools/` | `scabbards.toml` (covered scabbard definitions), `gen_variants.py`, `pack_bundle.sh` | - |
+| `tools/` | `scabbards.toml` (covered scabbard definitions), `gen_variants.py`, `pack_bundle.py` | - |
 
 Each component is versioned **independently**; the source of truth is the
 `version` field in its `witcherscript.toml`. The repo root mirrors the game
@@ -40,7 +40,7 @@ names that are not loaded (a mod that is not installed) are harmless.
 1. Add a line `"definition name" = "origin"` under `[steel_scabbards]` or
    `[silver_scabbards]` in `tools/scabbards.toml`.
 2. `python3 tools/gen_variants.py` regenerates `bundle_src/`.
-3. `tools/pack_bundle.sh` rebuilds `blob0.bundle` and `metadata.store`
+3. `tools/pack_bundle.py` rebuilds `blob0.bundle` and `metadata.store`
    (needs `wcc_lite` from Script Merger).
 
 Or open an issue with the definition name of the scabbard.
