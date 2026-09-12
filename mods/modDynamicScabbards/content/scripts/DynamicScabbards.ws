@@ -320,25 +320,38 @@ class DynamicScabbards
         return false;
     }
 
-    // only the sword and armor slots matter; in chestplate mode gloves, pants and boots do not
-    public function TriggersScabbardUpdate(slot : EEquipmentSlots) : bool
+    // the equipped item of a slot changed: a sword slot refreshes its own scabbard, an armor slot
+    // both; in chestplate mode gloves, pants and boots do not matter
+    public function UpdateScabbardsForSlot(slot : EEquipmentSlots)
     {
         switch (slot)
         {
             case EES_SteelSword:
+                UpdateScabbards(true, false);
+                return;
             case EES_SilverSword:
+                UpdateScabbards(false, true);
+                return;
             case EES_Armor:
-                return true;
-            case EES_Boots:
-            case EES_Pants:
+                UpdateScabbards(true, true);
+                return;
             case EES_Gloves:
-                return !chestplate_mode;
+            case EES_Pants:
+            case EES_Boots:
+                if (!chestplate_mode)
+                {
+                    UpdateScabbards(true, true);
+                }
+                return;
         }
-
-        return false;
     }
 
     public function SetScabbards()
+    {
+        UpdateScabbards(true, true);
+    }
+
+    function UpdateScabbards(steel : bool, silver : bool)
     {
         var school : DSSchoolSet;
 
@@ -353,8 +366,15 @@ class DynamicScabbards
             return;
         }
 
-        UpdateSteelScabbard(school);
-        UpdateSilverScabbard(school);
+        if (steel)
+        {
+            UpdateSteelScabbard(school);
+        }
+
+        if (silver)
+        {
+            UpdateSilverScabbard(school);
+        }
     }
 }
 
@@ -468,9 +488,9 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
 
     // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
     // the equipped sword and armor right away
-    if (thePlayer.IsDynamicScabbardsEnabled() && thePlayer.ds.TriggersScabbardUpdate(slot))
+    if (thePlayer.IsDynamicScabbardsEnabled())
     {
-        thePlayer.ds.SetScabbards();
+        thePlayer.ds.UpdateScabbardsForSlot(slot);
     }
 
     return result;
@@ -490,9 +510,9 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
 
     // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
     // the equipped sword and armor right away
-    if (thePlayer.IsDynamicScabbardsEnabled() && thePlayer.ds.TriggersScabbardUpdate(slot))
+    if (thePlayer.IsDynamicScabbardsEnabled())
     {
-        thePlayer.ds.SetScabbards();
+        thePlayer.ds.UpdateScabbardsForSlot(slot);
     }
 
     return result;
