@@ -481,7 +481,7 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
     return result;
 }
 
-// update the menu option for the chestplate armor piece only setting. Disabling the options to interact with the menu when the mod is turned off prevents race conditions and exceptions
+// update the menu swf for chestplate armor piece only setting. Disabling the options to interact with the menu when the mod is turned off prevents race conditions and exceptions
 @addMethod(CR4IngameMenu)
 function UpdateChestplateModeOption(disabled : bool)
 {
