@@ -287,14 +287,29 @@ class DynamicScabbards
         return false;
     }
 
+    // the item shown on the slot; the WPIAO patch wraps this to return the outfit item
+    function GetVisibleItemName(slot : EEquipmentSlots, out item_name : name) : bool
+    {
+        var inv : CInventoryComponent;
+        var item : SItemUniqueId;
+
+        inv = thePlayer.GetInventory();
+
+        if (!inv.GetItemEquippedOnSlot(slot, item))
+        {
+            return false;
+        }
+
+        item_name = inv.GetItemName(item);
+        return true;
+    }
+
     public function GetEquippedSchool(out school: DSSchoolSet) : bool
     {
-        var armor : SItemUniqueId;
-        var gloves : SItemUniqueId;
-        var pants : SItemUniqueId;
-        var boots : SItemUniqueId;
-
-        var inv : CInventoryComponent;
+        var armor : name;
+        var gloves : name;
+        var pants : name;
+        var boots : name;
 
         if (school_mode != DS_Set_Equipped)
         {
@@ -302,25 +317,23 @@ class DynamicScabbards
             return true;
         }
 
-        inv = thePlayer.GetInventory();
-
         if (chestplate_mode)
         {
             // only read chestplate armor piece
-            if (inv.GetItemEquippedOnSlot(EES_Armor, armor))
+            if (GetVisibleItemName(EES_Armor, armor))
             {
-                return GetSchoolFromArmor(inv.GetItemName(armor), '', '', '', school);
+                return GetSchoolFromArmor(armor, '', '', '', school);
             }
         }
         else
         {
             // all pieces must be equipped
-            if (inv.GetItemEquippedOnSlot(EES_Armor, armor)   &&
-                inv.GetItemEquippedOnSlot(EES_Gloves, gloves) &&
-                inv.GetItemEquippedOnSlot(EES_Pants, pants)   &&
-                inv.GetItemEquippedOnSlot(EES_Boots, boots))
+            if (GetVisibleItemName(EES_Armor, armor)   &&
+                GetVisibleItemName(EES_Gloves, gloves) &&
+                GetVisibleItemName(EES_Pants, pants)   &&
+                GetVisibleItemName(EES_Boots, boots))
             {
-                return GetSchoolFromArmor(inv.GetItemName(armor), inv.GetItemName(gloves), inv.GetItemName(pants), inv.GetItemName(boots), school);
+                return GetSchoolFromArmor(armor, gloves, pants, boots, school);
             }
         }
 

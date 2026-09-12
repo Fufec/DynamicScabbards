@@ -1,91 +1,42 @@
+// WPIAO keeps its outfit slots protected, so the two readers live in its class
 @addMethod(WPIAO_OutfitManagerBase)
 public function DS_HasOutfitOnSlot(slot : EEquipmentSlots) : bool
 {
     return OutfitSlotExists(slot) && outfitSlots[slot].isOn;
 }
 
+// false for an empty outfit: the slot looks empty
 @addMethod(WPIAO_OutfitManagerBase)
-public function DS_IsSlotEmptyOutfit(slot : EEquipmentSlots) : bool
+public function DS_GetOutfitItemName(slot : EEquipmentSlots, out item_name : name) : bool
 {
-    return DS_HasOutfitOnSlot(slot) && IsPreviewItemDefaultItem(slot);
-}
-
-@addMethod(WPIAO_OutfitManagerBase)
-public function DS_GetVisibleItemName(slot : EEquipmentSlots, out itemName : name) : bool
-{
-    var tempId : SItemUniqueId;
-
-    // WPIAO outfit is active on this slot - use the visual item name
-    // (empty outfits are already filtered out by DS_IsSlotEmptyOutfit in GetEquippedSchool)
-    if (DS_HasOutfitOnSlot(slot))
-    {
-        itemName = outfitSlots[slot].previewItemName;
-        return true;
-    }
-
-    // no WPIAO outfit on this slot - fall back to actually equipped item
-    if (GetWitcherPlayer().GetItemEquippedOnSlot(slot, tempId))
-    {
-        itemName = thePlayer.GetInventory().GetItemName(tempId);
-        return true;
-    }
-
-    // nothing equipped at all
-    return false;
-}
-
-@wrapMethod(DynamicScabbards)
-function GetEquippedSchool(out school : DSSchoolSet) : bool
-{
-    var manager : WPIAO_PreviewOutfitManager;
-    var armorName, glovesName, pantsName, bootsName : name;
-
-    manager = GetWitcherPlayer().ModWPIAO_GetManager();
-
-    // a fixed school chosen in the menu, no WPIAO or no outfit on any armor slot - use default DS behavior
-    if (school_mode != DS_Set_Equipped || !manager || (!manager.DS_HasOutfitOnSlot(EES_Armor)
-                    && !manager.DS_HasOutfitOnSlot(EES_Gloves)
-                    && !manager.DS_HasOutfitOnSlot(EES_Pants)
-                    && !manager.DS_HasOutfitOnSlot(EES_Boots)))
-    {
-        return wrappedMethod(school);
-    }
-
-    // empty outfit on armor - never a school set regardless of mode
-    if (manager.DS_IsSlotEmptyOutfit(EES_Armor))
+    if (IsPreviewItemDefaultItem(slot))
     {
         return false;
     }
 
-    if (chestplate_mode)
-    {
-        if (manager.DS_GetVisibleItemName(EES_Armor, armorName))
-        {
-            return GetSchoolFromArmor(armorName, '', '', '', school);
-        }
-    }
-    else
-    {
-        // full set mode - any empty slot means no school scabbards
-        if (manager.DS_IsSlotEmptyOutfit(EES_Gloves)
-            || manager.DS_IsSlotEmptyOutfit(EES_Pants)
-            || manager.DS_IsSlotEmptyOutfit(EES_Boots))
-        {
-            return false;
-        }
-
-        if (manager.DS_GetVisibleItemName(EES_Armor, armorName)
-            && manager.DS_GetVisibleItemName(EES_Gloves, glovesName)
-            && manager.DS_GetVisibleItemName(EES_Pants, pantsName)
-            && manager.DS_GetVisibleItemName(EES_Boots, bootsName))
-        {
-            return GetSchoolFromArmor(armorName, glovesName, pantsName, bootsName, school);
-        }
-    }
-
-    return false;
+    item_name = outfitSlots[slot].previewItemName;
+    return true;
 }
 
+// Dynamic Scabbards reads the item shown on each armor slot through GetVisibleItemName;
+// with an outfit on the slot the outfit item counts
+@wrapMethod(DynamicScabbards)
+function GetVisibleItemName(slot : EEquipmentSlots, out item_name : name) : bool
+{
+    var manager : WPIAO_PreviewOutfitManager;
+
+    manager = GetWitcherPlayer().ModWPIAO_GetManager();
+
+    // no WPIAO or no outfit on this slot - the equipped item
+    if (!manager || !manager.DS_HasOutfitOnSlot(slot))
+    {
+        return wrappedMethod(slot, item_name);
+    }
+
+    return manager.DS_GetOutfitItemName(slot, item_name);
+}
+
+// every way WPIAO changes an outfit
 @wrapMethod(WPIAO_PreviewOutfitManager)
 function SetOutfitByItem(item : SItemUniqueId) : bool
 {
