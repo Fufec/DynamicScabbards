@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generates the item definitions of Dynamic Scabbards (mod bundle XML).
 
-Reads tools/scabbards.txt and writes
+Reads tools/scabbards.toml and writes
   bundle_src/gameplay/items/dynamic_scabbards.xml       (regular game)
   bundle_src/gameplay/items_plus/dynamic_scabbards.xml  (New Game+)
 Both files are UTF-16 with BOM and CRLF, the same as the vanilla item XML.
@@ -11,10 +11,10 @@ scabbard definition in the list, an item_extension with one variant per school: 
 invisible item of a school is mounted, the engine spawns the bound scabbard of the sword
 from the school template instead of its own. Pack with tools/pack_bundle.sh afterwards.
 """
-import os, sys
+import os, sys, tomllib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LIST = os.path.join(ROOT, 'tools', 'scabbards.txt')
+LIST = os.path.join(ROOT, 'tools', 'scabbards.toml')
 OUT = [os.path.join(ROOT, 'bundle_src', 'gameplay', 'items', 'dynamic_scabbards.xml'),
        os.path.join(ROOT, 'bundle_src', 'gameplay', 'items_plus', 'dynamic_scabbards.xml')]
 
@@ -34,15 +34,14 @@ CATEGORY = {'steel_scabbards': ('steel', 1), 'silver_scabbards': ('silver', 2)} 
 
 
 def read_list(path):
+    # [steel_scabbards] / [silver_scabbards] tables: "definition name" = "origin"
+    with open(path, 'rb') as f:
+        tables = tomllib.load(f)
     items = []
-    for line in open(path, encoding='utf-8'):
-        line = line.split('#', 1)[0].strip()
-        if not line:
-            continue
-        parts = [p.strip() for p in line.split('|')]
-        if len(parts) < 2 or parts[1] not in CATEGORY:
-            sys.exit('bad line in %s: %r' % (path, line))
-        items.append((parts[0], parts[1]))
+    for cat, names in tables.items():
+        if cat not in CATEGORY:
+            sys.exit('unknown table [%s] in %s' % (cat, path))
+        items.extend((name, cat) for name in names)
     return items
 
 
