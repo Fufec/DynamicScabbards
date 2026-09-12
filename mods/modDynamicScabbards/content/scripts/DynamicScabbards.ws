@@ -143,28 +143,17 @@ class DynamicScabbards
         }
     }
 
-    // keeps exactly one school item of the category in the inventory and mounted; '' removes all
-    function SetSchoolItem(category : name, item_name : name) : bool
+    function RemoveSchoolItems(category : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
-        var added : array<SItemUniqueId>;
-        var found : SItemUniqueId;
         var i : int;
 
         inv = thePlayer.GetInventory();
-        found = GetInvalidUniqueId();
         ids = inv.GetItemsByCategory(category);
 
         for (i = 0; i < ids.Size(); i += 1)
         {
-            if (inv.GetItemName(ids[i]) == item_name && !inv.IsIdValid(found))
-            {
-                found = ids[i];
-                continue;
-            }
-
-            // another school, or a duplicate
             if (inv.IsItemMounted(ids[i]))
             {
                 inv.UnmountItem(ids[i], true);
@@ -172,29 +161,47 @@ class DynamicScabbards
 
             inv.RemoveItem(ids[i], 1);
         }
+    }
+
+    function IsSchoolItemMounted(category : name, item_name : name) : bool
+    {
+        var inv : CInventoryComponent;
+        var ids : array<SItemUniqueId>;
+
+        inv = thePlayer.GetInventory();
+        ids = inv.GetItemsByCategory(category);
+
+        return ids.Size() == 1 && inv.GetItemName(ids[0]) == item_name && inv.IsItemMounted(ids[0]);
+    }
+
+    // keeps exactly one school item of the category mounted, '' means none. Returns false when the
+    // item definition is missing (the bundle of the mod is not installed)
+    function SetSchoolItem(category : name, item_name : name) : bool
+    {
+        var inv : CInventoryComponent;
+        var ids : array<SItemUniqueId>;
+
+        if (IsSchoolItemMounted(category, item_name))
+        {
+            return true; // the usual case
+        }
+
+        RemoveSchoolItems(category);
 
         if (!IsNameValid(item_name))
         {
             return true;
         }
 
-        if (!inv.IsIdValid(found))
+        inv = thePlayer.GetInventory();
+        ids = inv.AddAnItem(item_name, 1, true, true);
+
+        if (ids.Size() == 0)
         {
-            added = inv.AddAnItem(item_name, 1, true, true);
-
-            if (added.Size() == 0)
-            {
-                return false; // definition missing: the bundle of the mod is not installed
-            }
-
-            found = added[0];
+            return false;
         }
 
-        if (!inv.IsItemMounted(found))
-        {
-            inv.MountItem(found);
-        }
-
+        inv.MountItem(ids[0]);
         return true;
     }
 
