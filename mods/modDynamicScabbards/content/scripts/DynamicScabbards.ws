@@ -1,19 +1,22 @@
+// the values match the school options in the menu
 enum DSSchoolSet
 {
-    DS_Set_KaerMorhen,
-    DS_Set_Bear,
-    DS_Set_Cat,
-    DS_Set_Griffin,
-    DS_Set_Manticore,
-    DS_Set_Wolf,
-    DS_Set_Viper,
-    DS_Set_ForgottenWolf
+    DS_Set_Equipped = 0, // follow the equipped set
+    DS_Set_KaerMorhen = 1,
+    DS_Set_Bear = 2,
+    DS_Set_Cat = 3,
+    DS_Set_Griffin = 4,
+    DS_Set_Manticore = 5,
+    DS_Set_Wolf = 6,
+    DS_Set_Viper = 7,
+    DS_Set_ForgottenWolf = 8
 }
 
 class DynamicScabbards
 {
     var enabled : bool; // mod enabled
     var chestplate_mode : bool; // if true, only chestplate armor piece will be required for the swap to occur
+    var school_mode : DSSchoolSet; // DS_Set_Equipped, or a fixed school chosen in the menu
 
     public function SetEnabled(value : bool)
     {
@@ -28,6 +31,11 @@ class DynamicScabbards
     public function SetChestplateMode(value : bool)
     {
         chestplate_mode = value;
+    }
+
+    public function SetSchoolMode(value : DSSchoolSet)
+    {
+        school_mode = value;
     }
 
     // the bundle adds variants to every scabbard definition: while the marker of a school is mounted,
@@ -288,6 +296,12 @@ class DynamicScabbards
 
         var inv : CInventoryComponent;
 
+        if (school_mode != DS_Set_Equipped)
+        {
+            school = school_mode;
+            return true;
+        }
+
         inv = thePlayer.GetInventory();
 
         if (chestplate_mode)
@@ -365,6 +379,7 @@ public function InitDynamicScabbards()
 
     var enabledValue: string;
     var chestModeValue: string;
+    var schoolModeValue: string;
 
     var inGameConfig: CInGameConfigWrapper;
 
@@ -375,6 +390,7 @@ public function InitDynamicScabbards()
     {
         inGameConfig.SetVarValue('DSOptions', 'DSEnabled', true);
         inGameConfig.SetVarValue('DSOptions', 'DSModeChestplate', false);
+        inGameConfig.SetVarValue('DSOptions', 'DSModeSchool', 0);
         inGameConfig.SetVarValue('DSOptions', 'DSVersion', currentVersion);
         theGame.SaveUserSettings();
     }
@@ -387,6 +403,7 @@ public function InitDynamicScabbards()
     // Load settings with fallbacks for missing XML
     enabledValue = inGameConfig.GetVarValue('DSOptions', 'DSEnabled');
     chestModeValue = inGameConfig.GetVarValue('DSOptions', 'DSModeChestplate');
+    schoolModeValue = inGameConfig.GetVarValue('DSOptions', 'DSModeSchool');
 
     if (enabledValue != "")
     {
@@ -404,6 +421,15 @@ public function InitDynamicScabbards()
     else
     {
         this.ds.SetChestplateMode(false); // missing xml defaults to chestplate mode to be disabled
+    }
+
+    if (schoolModeValue != "")
+    {
+        this.ds.SetSchoolMode((DSSchoolSet)StringToInt(schoolModeValue));
+    }
+    else
+    {
+        this.ds.SetSchoolMode(DS_Set_Equipped); // missing xml defaults to following the equipped set
     }
 }
 
@@ -471,20 +497,26 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
     return result;
 }
 
-// update the menu swf for chestplate armor piece only setting. Disabling the options to interact with the menu when the mod is turned off prevents race conditions and exceptions
+// update the menu swf: the school choice needs the mod enabled, the chestplate armor piece only setting needs the mod enabled and the equipped set followed.
+// Disabling the options to interact with the menu when the mod is turned off prevents race conditions and exceptions
 @addMethod(CR4IngameMenu)
-function UpdateChestplateModeOption(disabled : bool)
+function UpdateDSMenuOptions(modEnabled : bool, schoolMode : DSSchoolSet)
 {
     var dataArray : CScriptedFlashArray;
-    var dataObject : CScriptedFlashObject;
+    var schoolOption : CScriptedFlashObject;
+    var chestplateOption : CScriptedFlashObject;
 
     dataArray = m_flashValueStorage.CreateTempFlashArray();
-    dataObject = m_flashValueStorage.CreateTempFlashObject();
 
-    dataObject.SetMemberFlashUInt('tag', NameToFlashUInt('DSModeChestplate'));
-    dataObject.SetMemberFlashBool('disabled', disabled);
+    schoolOption = m_flashValueStorage.CreateTempFlashObject();
+    schoolOption.SetMemberFlashUInt('tag', NameToFlashUInt('DSModeSchool'));
+    schoolOption.SetMemberFlashBool('disabled', !modEnabled);
+    dataArray.PushBackFlashObject(schoolOption);
 
-    dataArray.PushBackFlashObject(dataObject);
+    chestplateOption = m_flashValueStorage.CreateTempFlashObject();
+    chestplateOption.SetMemberFlashUInt('tag', NameToFlashUInt('DSModeChestplate'));
+    chestplateOption.SetMemberFlashBool('disabled', !modEnabled || schoolMode != DS_Set_Equipped);
+    dataArray.PushBackFlashObject(chestplateOption);
 
     m_flashValueStorage.SetFlashArray('options.update_disabled', dataArray);
 }
@@ -496,6 +528,7 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
     var groupName : name;
     var inGameConfig: CInGameConfigWrapper;
     var modEnabled: bool;
+    var schoolMode : DSSchoolSet;
     var scabbards : DynamicScabbards;
 
     result = wrappedMethod(groupId, optionName, optionValue);
@@ -514,16 +547,21 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
     }
 
     scabbards = thePlayer.GetDynamicScabbards();
+    modEnabled = inGameConfig.GetVarValue(groupName, 'DSEnabled');
+    schoolMode = (DSSchoolSet)StringToInt(inGameConfig.GetVarValue(groupName, 'DSModeSchool'));
 
     switch(optionName)
     {
         case 'DSEnabled':
-            modEnabled = inGameConfig.GetVarValue(groupName, 'DSEnabled');
-
             scabbards.SetEnabled(modEnabled);
             scabbards.SetScabbards();
-            UpdateChestplateModeOption(!modEnabled);
+            UpdateDSMenuOptions(modEnabled, schoolMode);
+            break;
 
+        case 'DSModeSchool':
+            scabbards.SetSchoolMode(schoolMode);
+            scabbards.SetScabbards();
+            UpdateDSMenuOptions(modEnabled, schoolMode);
             break;
 
         case 'DSModeChestplate':
@@ -535,13 +573,14 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
     return result;
 }
 
-// disable the option to change chestplate armor piece settings when the mod is turned off in settings (before changing any value)
+// disable the dependent options when the submenu opens (before changing any value); read from config, the main menu has no player
 @wrapMethod(CR4IngameMenu)
 function OnShowOptionSubmenu(actionType : int, menuTag : int, id : string)
 {
     var result: bool;
     var inGameConfig: CInGameConfigWrapper;
     var modEnabled : bool;
+    var schoolMode : DSSchoolSet;
 
     result = wrappedMethod(actionType, menuTag, id);
 
@@ -549,11 +588,9 @@ function OnShowOptionSubmenu(actionType : int, menuTag : int, id : string)
     {
         inGameConfig = theGame.GetInGameConfigWrapper();
         modEnabled = inGameConfig.GetVarValue('DSOptions', 'DSEnabled');
+        schoolMode = (DSSchoolSet)StringToInt(inGameConfig.GetVarValue('DSOptions', 'DSModeSchool'));
 
-        if (!modEnabled)
-        {
-            UpdateChestplateModeOption(true);
-        }
+        UpdateDSMenuOptions(modEnabled, schoolMode);
     }
 
     return result;

@@ -5,6 +5,19 @@
             <Var id="DSVersion" displayName="ds_version" displayType="SLIDER;0;50;50000"  visibilityCondition="hideAlways"/>
 			<Var id="DSEnabled" displayName="ds_enabled" displayType="TOGGLE" />
 			<Var id="Separator" displayName=""           displayType="SUBTLE_SEPARATOR"/>
+			<Var id="DSModeSchool" displayName="ds_mode_school" displayType="OPTIONS">
+				<OptionsArray>
+					<Option id="0" displayName="ds_mode_dynamic"><Entry varId="DSModeSchool" value="0" /></Option>
+					<Option id="1" displayName="ds_mode_kaer_morhen"><Entry varId="DSModeSchool" value="1" /></Option>
+					<Option id="2" displayName="ds_mode_bear"><Entry varId="DSModeSchool" value="2" /></Option>
+					<Option id="3" displayName="ds_mode_cat"><Entry varId="DSModeSchool" value="3" /></Option>
+					<Option id="4" displayName="ds_mode_griffin"><Entry varId="DSModeSchool" value="4" /></Option>
+					<Option id="5" displayName="ds_mode_manticore"><Entry varId="DSModeSchool" value="5" /></Option>
+					<Option id="6" displayName="ds_mode_wolf"><Entry varId="DSModeSchool" value="6" /></Option>
+					<Option id="7" displayName="ds_mode_viper"><Entry varId="DSModeSchool" value="7" /></Option>
+					<Option id="8" displayName="ds_mode_forgotten_wolf"><Entry varId="DSModeSchool" value="8" /></Option>
+				</OptionsArray>
+			</Var>
             <Var id="DSModeChestplate" displayName="ds_mode_chestplate" displayType="TOGGLE" />
 		</VisibleVars>
 	</Group>
