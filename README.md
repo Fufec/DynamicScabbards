@@ -41,7 +41,7 @@ names that are not loaded (a mod that is not installed) are harmless.
    `[silver_scabbards]` in `tools/scabbards.toml`.
 2. `python3 tools/gen_variants.py` regenerates `bundle_src/`.
 3. `tools/pack_bundle.py` rebuilds `blob0.bundle` and `metadata.store`
-   (needs `wcc_lite` from Script Merger).
+   (Windows, needs `wcc_lite` from Script Merger).
 
 Or open an issue with the definition name of the scabbard.
 
