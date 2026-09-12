@@ -1,6 +1,6 @@
-# Seznam definic pochev, ke kterym gen_variants.py pridava item_extension s variantami.
-# Format: jmeno_definice | kategorie | puvod. Radky s # se preskakuji.
-# Vygenerovano 2026-09-11 ze vsech bundlu nainstalovane hry (content, dlc, mods).
+# Scabbard definitions that gen_variants.py extends with the school variants.
+# Format: definition_name | category | origin. Lines starting with # are skipped.
+# Generated 2026-09-11 from all bundles of the installed game (content, dlc, mods).
 
 # --- steel_scabbards ---
 Ciri Zireael Sword Scabbard | steel_scabbards | vanilla

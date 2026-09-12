@@ -1,11 +1,14 @@
-# Release artifacts (zips se na repo netrackují – patří na GitHub Releases / Nexus)
+# Release artifacts (zips are not tracked, they live on GitHub Releases / Nexus)
 *.zip
 /dist/
 
-# Claude Code / editor lokální nastavení
+# Claude Code / editor local settings
 .claude/
 .vscode/
 
-# OS smetí
+# OS clutter
 Thumbs.db
 desktop.ini
+
+# Working notes, local only
+/docs/
