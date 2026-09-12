@@ -32,12 +32,12 @@ class DynamicScabbards
 
     // The bundle adds variants to every scabbard definition: while the invisible school item is mounted,
     // the engine spawns the bound scabbard from the school template. The script only keeps the right item mounted
-    function GetSteelSchoolItemCategory() : name
+    function SteelCategory() : name
     {
         return 'ds_steel';
     }
 
-    function GetSilverSchoolItemCategory() : name
+    function SilverCategory() : name
     {
         return 'ds_silver';
     }
@@ -103,7 +103,7 @@ class DynamicScabbards
         return false;
     }
 
-    function GetSteelSchoolItemName(school: DSSchoolSet) : name
+    function GetSteelItemName(school: DSSchoolSet) : name
     {
         switch (school)
         {
@@ -119,7 +119,7 @@ class DynamicScabbards
         }
     }
 
-    function GetSilverSchoolItemName(school: DSSchoolSet) : name
+    function GetSilverItemName(school: DSSchoolSet) : name
     {
         switch (school)
         {
@@ -192,7 +192,7 @@ class DynamicScabbards
     {
         var inv : CInventoryComponent;
         var sword_steel : SItemUniqueId;
-        var sword_name : name;
+        var steel_name : name;
 
         inv = thePlayer.GetInventory();
 
@@ -201,22 +201,22 @@ class DynamicScabbards
             return; // no sword, keep the school item
         }
 
-        sword_name = inv.GetItemName(sword_steel);
+        steel_name = inv.GetItemName(sword_steel);
 
-        if (!inv.IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(sword_name))
+        if (!inv.IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(steel_name))
         {
-            RemoveSchoolItems(GetSteelSchoolItemCategory());
+            RemoveSchoolItems(SteelCategory());
             return;
         }
 
-        EnsureSchoolItemMounted(GetSteelSchoolItemCategory(), GetSteelSchoolItemName(school));
+        EnsureSchoolItemMounted(SteelCategory(), GetSteelItemName(school));
     }
 
     function UpdateSilverScabbard(school : DSSchoolSet)
     {
         var inv : CInventoryComponent;
         var sword_silver : SItemUniqueId;
-        var sword_name : name;
+        var silver_name : name;
 
         inv = thePlayer.GetInventory();
 
@@ -225,21 +225,21 @@ class DynamicScabbards
             return; // no sword, keep the school item
         }
 
-        sword_name = inv.GetItemName(sword_silver);
+        silver_name = inv.GetItemName(sword_silver);
 
-        if (!inv.IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(sword_name))
+        if (!inv.IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(silver_name))
         {
-            RemoveSchoolItems(GetSilverSchoolItemCategory());
+            RemoveSchoolItems(SilverCategory());
             return;
         }
 
-        EnsureSchoolItemMounted(GetSilverSchoolItemCategory(), GetSilverSchoolItemName(school));
+        EnsureSchoolItemMounted(SilverCategory(), GetSilverItemName(school));
     }
 
     function RestoreVanillaScabbards()
     {
-        RemoveSchoolItems(GetSteelSchoolItemCategory());
-        RemoveSchoolItems(GetSilverSchoolItemCategory());
+        RemoveSchoolItems(SteelCategory());
+        RemoveSchoolItems(SilverCategory());
     }
 
     // Set detection: full-set or chestplate-only mode based on chestplate_mode setting
