@@ -411,21 +411,16 @@ public function InitDynamicScabbards()
     }
 }
 
-// creates the mod instance if needed and returns whether the mod is enabled
+// the mod instance, created with the settings on first use
 @addMethod(CR4Player)
-function IsDynamicScabbardsEnabled() : bool
+function GetDynamicScabbards() : DynamicScabbards
 {
     if (!ds)
     {
-       InitDynamicScabbards();
+        InitDynamicScabbards();
     }
 
-    if(!ds.IsEnabled())
-    {
-        return false;
-    }
-    
-    return true;
+    return ds;
 }
 
 // once after every load: the school item is in the save and stays mounted, so this normally finds
@@ -435,7 +430,7 @@ function OnAfterLoadingScreenGameStart()
 {
     wrappedMethod();
 
-    if (thePlayer.IsDynamicScabbardsEnabled())
+    if (thePlayer.GetDynamicScabbards().IsEnabled())
     {
         thePlayer.ds.SetScabbards();
     }
@@ -448,7 +443,7 @@ function OnPlayerChanged()
 {
     wrappedMethod();
 
-    if (thePlayer.IsDynamicScabbardsEnabled())
+    if (thePlayer.GetDynamicScabbards().IsEnabled())
     {
         thePlayer.ds.SetScabbards();
     }
@@ -468,7 +463,7 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
 
     // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
     // the equipped sword and armor right away
-    if (thePlayer.IsDynamicScabbardsEnabled() && thePlayer.ds.TriggersScabbardUpdate(slot))
+    if (thePlayer.GetDynamicScabbards().IsEnabled() && thePlayer.ds.TriggersScabbardUpdate(slot))
     {
         thePlayer.ds.SetScabbards();
     }
@@ -490,7 +485,7 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
 
     // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
     // the equipped sword and armor right away
-    if (thePlayer.IsDynamicScabbardsEnabled() && thePlayer.ds.TriggersScabbardUpdate(slot))
+    if (thePlayer.GetDynamicScabbards().IsEnabled() && thePlayer.ds.TriggersScabbardUpdate(slot))
     {
         thePlayer.ds.SetScabbards();
     }
@@ -539,10 +534,7 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
         return result;
 	}
 
-    if (!thePlayer.ds)
-    {
-       thePlayer.InitDynamicScabbards();
-    }
+    thePlayer.GetDynamicScabbards();
 
     switch(optionName)
     {
