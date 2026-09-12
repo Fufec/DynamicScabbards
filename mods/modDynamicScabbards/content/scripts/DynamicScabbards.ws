@@ -15,19 +15,19 @@ class DynamicScabbards
     var enabled : bool; // mod enabled
     var chestplate_mode : bool; // if true, only chestplate armor piece will be required for the swap to occur
 
-    public function SetEnabled(value : bool) 
-    { 
-        enabled = value; 
+    public function SetEnabled(value : bool)
+    {
+        enabled = value;
     }
 
-    public function SetChestplateMode(value : bool) 
-    { 
-        chestplate_mode = value; 
+    public function SetChestplateMode(value : bool)
+    {
+        chestplate_mode = value;
     }
 
-    public function IsEnabled() : bool 
-    { 
-        return enabled; 
+    public function IsEnabled() : bool
+    {
+        return enabled;
     }
 
     // The bundle adds variants to every scabbard definition: while the invisible school item is mounted,
@@ -308,7 +308,7 @@ class DynamicScabbards
                 return GetSchoolFromArmor(inv.GetItemName(armor), inv.GetItemName(gloves), inv.GetItemName(pants), inv.GetItemName(boots), school);
             }
         }
-        
+
         return false;
     }
 
@@ -369,7 +369,7 @@ public function InitDynamicScabbards()
 
     this.ds = new DynamicScabbards in this;
     inGameConfig = theGame.GetInGameConfigWrapper();
-    
+
     if (!inGameConfig.GetVarValue('DSOptions', 'DSVersion'))
     {
         inGameConfig.SetVarValue('DSOptions', 'DSEnabled', true);
@@ -382,11 +382,11 @@ public function InitDynamicScabbards()
         inGameConfig.SetVarValue('DSOptions', 'DSVersion', currentVersion);
         theGame.SaveUserSettings();
     }
-    
+
     // Load settings with fallbacks for missing XML
     enabledValue = inGameConfig.GetVarValue('DSOptions', 'DSEnabled');
     chestModeValue = inGameConfig.GetVarValue('DSOptions', 'DSModeChestplate');
-    
+
     if (enabledValue != "")
     {
         this.ds.SetEnabled(enabledValue);
@@ -395,7 +395,7 @@ public function InitDynamicScabbards()
     {
         this.ds.SetEnabled(true); // missing xml defaults to enabling the mod
     }
-    
+
     if (chestModeValue != "")
     {
         this.ds.SetChestplateMode(chestModeValue);
@@ -476,7 +476,7 @@ function UpdateChestplateModeOption(disabled : bool)
 {
     var dataArray : CScriptedFlashArray;
     var dataObject : CScriptedFlashObject;
-    
+
     dataArray = m_flashValueStorage.CreateTempFlashArray();
     dataObject = m_flashValueStorage.CreateTempFlashObject();
 
@@ -501,7 +501,7 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
 
     if(result)
     {
-       return result; 
+       return result;
     }
 
     inGameConfig = theGame.GetInGameConfigWrapper();
@@ -524,7 +524,7 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
             UpdateChestplateModeOption(!modEnabled);
 
             break;
-            
+
         case 'DSModeChestplate':
             scabbards.SetChestplateMode(inGameConfig.GetVarValue(groupName, 'DSModeChestplate'));
             scabbards.SetScabbards();
