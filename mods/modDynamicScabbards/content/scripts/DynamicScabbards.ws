@@ -188,6 +188,12 @@ class DynamicScabbards
         }
     }
 
+    // the mod applies: Geralt, enabled and a school set equipped
+    function HasActiveSchool(out school : DSSchoolSet) : bool
+    {
+        return GetWitcherPlayer() && enabled && GetEquippedSchool(school);
+    }
+
     function UpdateSteelScabbard()
     {
         var inv : CInventoryComponent;
@@ -195,18 +201,13 @@ class DynamicScabbards
         var sword_steel : SItemUniqueId;
         var steel_name : name;
 
-        if (!GetWitcherPlayer())
-        {
-            return;
-        }
-
-        inv = thePlayer.GetInventory();
-
-        if (!enabled || !GetEquippedSchool(school))
+        if (!HasActiveSchool(school))
         {
             ClearMarker(SteelCategory());
             return;
         }
+
+        inv = thePlayer.GetInventory();
 
         if (!inv.GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
         {
@@ -231,18 +232,13 @@ class DynamicScabbards
         var sword_silver : SItemUniqueId;
         var silver_name : name;
 
-        if (!GetWitcherPlayer())
-        {
-            return;
-        }
-
-        inv = thePlayer.GetInventory();
-
-        if (!enabled || !GetEquippedSchool(school))
+        if (!HasActiveSchool(school))
         {
             ClearMarker(SilverCategory());
             return;
         }
+
+        inv = thePlayer.GetInventory();
 
         if (!inv.GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
         {
