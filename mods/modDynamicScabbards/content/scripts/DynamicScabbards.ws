@@ -30,10 +30,8 @@ class DynamicScabbards
         return enabled; 
     }
 
-    // The scabbard definitions carry variants (mod bundle, gameplay\items\dynamic_scabbards.xml):
-    // when the invisible item of a school is mounted, the engine spawns the bound scabbard of the
-    // sword from the school template instead of its own. The script only keeps the right invisible
-    // item mounted, one per category; the engine handles every draw, load, scene and fast travel
+    // The bundle adds variants to every scabbard definition: while the invisible school item is mounted,
+    // the engine spawns the bound scabbard from the school template. The script only keeps the right item mounted
     function GetSteelSchoolItemCategory() : name
     {
         return 'ds_steel';
@@ -174,8 +172,7 @@ class DynamicScabbards
         return ids.Size() == 1 && inv.GetItemName(ids[0]) == item_name && inv.IsItemMounted(ids[0]);
     }
 
-    // keeps exactly one school item of the category mounted; nothing happens when the item definition
-    // is missing (the bundle of the mod is not installed)
+    // AddAnItem returns nothing without the bundle
     function EnsureSchoolItemMounted(category : name, item_name : name)
     {
         var inv : CInventoryComponent;
@@ -183,7 +180,7 @@ class DynamicScabbards
 
         if (IsSchoolItemMounted(category, item_name))
         {
-            return; // the usual case
+            return;
         }
 
         RemoveSchoolItems(category);
@@ -206,7 +203,7 @@ class DynamicScabbards
 
         if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
         {
-            return; // no scabbard is mounted; the school item stays for the next sword
+            return; // no sword, keep the school item
         }
 
         if (!inv.IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(sword_steel))
@@ -227,7 +224,7 @@ class DynamicScabbards
 
         if (!GetWitcherPlayer().GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
         {
-            return; // no scabbard is mounted; the school item stays for the next sword
+            return; // no sword, keep the school item
         }
 
         if (!inv.IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(sword_silver))
@@ -239,7 +236,6 @@ class DynamicScabbards
         EnsureSchoolItemMounted(GetSilverSchoolItemCategory(), GetSilverSchoolItemName(school));
     }
 
-    // without a school item the bound scabbards spawn from their own templates
     function RestoreVanillaScabbards()
     {
         RemoveSchoolItems(GetSteelSchoolItemCategory());
@@ -262,8 +258,7 @@ class DynamicScabbards
         }
     }
 
-    // the order matters: StrContains matches a substring, so "Red Wolf" has to come before "Wolf"
-    // and the vanilla names before the names of the Witcher School Set Rework mod
+    // order matters: "Red Wolf" before "Wolf", vanilla names before Set Rework names
     function GetSchoolFromArmor(armor : name, gloves : name, pants : name, boots : name, out school: DSSchoolSet) : bool
     {
         if (MatchesSchool(armor, gloves, pants, boots, "Starting"))      { school = DS_Set_KaerMorhen;     return true;}
@@ -319,9 +314,6 @@ class DynamicScabbards
         return false;
     }
 
-    // the equipped item of a slot changed, also inside the inventory: the paperdoll shows mounted
-    // items, so the school scabbard follows the sword and armor right away. Only the sword and
-    // armor slots matter; in chestplate mode gloves, pants and boots do not
     public function OnEquipmentChanged(slot : EEquipmentSlots)
     {
         switch (slot)
@@ -334,6 +326,7 @@ class DynamicScabbards
             case EES_Boots:
             case EES_Pants:
             case EES_Gloves:
+                // In chestplate mode, gloves/pants/boots don't trigger updates
                 if (!chestplate_mode)
                 {
                     SetScabbards();
@@ -415,7 +408,7 @@ public function InitDynamicScabbards()
     }
 }
 
-// the mod instance, created with the settings on first use
+// the instance is not saved, so it is created on first use
 @addMethod(CR4Player)
 function GetDynamicScabbards() : DynamicScabbards
 {
@@ -427,8 +420,7 @@ function GetDynamicScabbards() : DynamicScabbards
     return ds;
 }
 
-// once after every load: the school item is in the save and stays mounted, so this normally finds
-// nothing to do; it matters when the mod is installed on an existing save or was updated
+// covers installing or updating the mod on an existing save
 @wrapMethod(CR4Game)
 function OnAfterLoadingScreenGameStart()
 {
@@ -437,8 +429,7 @@ function OnAfterLoadingScreenGameStart()
     thePlayer.GetDynamicScabbards().SetScabbards();
 }
 
-// the player changed (to Ciri and back): Geralt comes back with his inventory and the school item
-// still mounted. This matters only when the mod was installed or updated while playing as Ciri
+// Ciri and back; covers installing the mod while playing as Ciri
 @wrapMethod(CR4Game)
 function OnPlayerChanged()
 {
