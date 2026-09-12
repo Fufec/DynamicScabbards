@@ -19,7 +19,7 @@ OUT = [os.path.join(ROOT, 'bundle_src', 'gameplay', 'items', 'dynamic_scabbards.
        os.path.join(ROOT, 'bundle_src', 'gameplay', 'items_plus', 'dynamic_scabbards.xml')]
 
 # school -> (steel template, silver template); the templates of the vanilla school scabbards
-# scabbard_steel_1_01, scabbard_steel_bear_01, ... (see DynamicScabbards.ws GetSteelSchoolItemName)
+# scabbard_steel_1_01, scabbard_steel_bear_01, ... (see DynamicScabbards.ws GetSteelItemName)
 SCHOOLS = [
     ('kaermorhen', 'scabbard_steel_1_01',            'scabbard_silver_1_01'),
     ('bear',       'witcher_steel_bear_scabbard',    'witcher_silver_bear_scabbard'),
