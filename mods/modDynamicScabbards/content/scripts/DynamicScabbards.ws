@@ -325,25 +325,6 @@ class DynamicScabbards
         return false;
     }
 
-    // Determine which slots trigger scabbard updates based on mode
-    public function TriggersScabbardUpdate(slot : EEquipmentSlots) : bool
-    {
-        switch (slot)
-        {
-            case EES_SteelSword:
-            case EES_SilverSword:
-            case EES_Armor:
-                return true;
-            case EES_Boots:
-            case EES_Pants:
-            case EES_Gloves:
-                // In chestplate mode, gloves/pants/boots don't trigger updates
-                return !chestplate_mode;
-        }
-
-        return false;
-    }
-
     public function SetScabbards()
     {
         var school : DSSchoolSet;
@@ -434,17 +415,6 @@ function IsDynamicScabbardsEnabled() : bool
     return true;
 }
 
-@addMethod(CR4Player)
-function HandleScabbardUpdate(slot : EEquipmentSlots)
-{
-    // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
-    // the equipped sword and armor right away. Cheap: usually the right item is already mounted
-    if (ds.TriggersScabbardUpdate(slot))
-    {
-        ds.SetScabbards();
-    }
-}
-
 // once after every load: the school item is in the save and stays mounted, so this normally finds
 // nothing to do; it matters when the mod is installed on an existing save or was updated
 @wrapMethod(CR4Game)
@@ -483,9 +453,11 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
         return result;
     }
 
+    // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
+    // the equipped sword and armor right away. Cheap: usually the right item is already mounted
     if (thePlayer.IsDynamicScabbardsEnabled())
     {
-        thePlayer.HandleScabbardUpdate(slot);
+        thePlayer.ds.SetScabbards();
     }
 
     return result;
@@ -503,9 +475,11 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
         return result;
     }
 
+    // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
+    // the equipped sword and armor right away. Cheap: usually the right item is already mounted
     if (thePlayer.IsDynamicScabbardsEnabled())
     {
-        thePlayer.HandleScabbardUpdate(slot);
+        thePlayer.ds.SetScabbards();
     }
 
     return result;
