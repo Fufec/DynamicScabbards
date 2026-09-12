@@ -86,6 +86,7 @@ class DynamicScabbards
             case 'Dwarven sword 2':
             case 'Dwarven sword 2_crafted':
             case 'Hanza steel sword 3':
+            case 'Angivare':
                 return true;
         }
 
