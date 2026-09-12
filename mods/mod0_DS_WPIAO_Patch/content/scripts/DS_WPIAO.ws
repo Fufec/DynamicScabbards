@@ -40,16 +40,10 @@ function GetEquippedSchool(out school : DSSchoolSet) : bool
     var manager : WPIAO_PreviewOutfitManager;
     var armorName, glovesName, pantsName, bootsName : name;
 
-    // a fixed school chosen in the menu does not depend on the outfit
-    if (school_mode != DS_Set_Equipped)
-    {
-        return wrappedMethod(school);
-    }
-
     manager = GetWitcherPlayer().ModWPIAO_GetManager();
 
-    // no WPIAO or no outfit on any armor slot - use default DS behavior
-    if (!manager || (!manager.DS_HasOutfitOnSlot(EES_Armor)
+    // a fixed school chosen in the menu, no WPIAO or no outfit on any armor slot - use default DS behavior
+    if (school_mode != DS_Set_Equipped || !manager || (!manager.DS_HasOutfitOnSlot(EES_Armor)
                     && !manager.DS_HasOutfitOnSlot(EES_Gloves)
                     && !manager.DS_HasOutfitOnSlot(EES_Pants)
                     && !manager.DS_HasOutfitOnSlot(EES_Boots)))
