@@ -409,3 +409,28 @@ Test (co má potvrdit):
   modu během hraní za Ciri přidán hook na `CR4Game.OnPlayerChanged`, který C++ volá po výměně hráče.
 - Zamrzání při změnách výbavy dělal jen testovací mod (`SaveUserSettings` při každém záznamu).
 
+
+### Výsledky testů a úklid (12. 9. 2026 večer)
+
+- Odinstalace: složka modu smazána, save načten bez chyb, vanilla pochvy. Testovací mod musel
+  jít pryč zároveň, wrapuje třídu modu.
+- Vlčí meč s medvědí zbrojí: medvědí pochva (rozšíření definice z dlc10 funguje).
+- Kaer Morhen přes `additem('Starting Armor')` atd.: funguje, nová hra se netestovala.
+- Ciri: mod vypnutý před sekcí a zapnutý během ní → po návratu školní pochvy; zapnutý před sekcí
+  a vypnutý během ní → po návratu vanilla. Instance po návratu čte nastavení čerstvě.
+- Kompatibilní mody bez patchů: Swords and Meditation, Auto Hide Weapons for Cloaks, Swords on Hip
+  a Swords on Hip When Cloaked (ten přebíjí soubor SOH prioritou). WPIAO s novým patchem funguje.
+- Měření (`ds_bench` v testovacím modu, `GetLocalTimeAsMilliseconds`): `GetItemsByCategory` 0,7 µs,
+  `GetEquippedSchool` 10,4 µs, celé `SetScabbards` 27 µs. Rozdělení aktualizace po slotech
+  (v historii f1a34c7) by ušetřilo ~8 µs při výměně meče a stálo ~10 µs při změně zbroje; vráceno,
+  `SetScabbards` zůstává jediným vstupem.
+- Pojmenování: neviditelný item je „marker“ (`SetMarker`, `ClearMarker`, `IsMarkerMounted`,
+  `GetSteelMarker`/`GetSilverMarker`, `SteelCategory()`/`SilverCategory()`).
+- PR #2 (mkhl, pevná škola z menu) sloučen do mainu a přenesen: `DSSchoolSet` má `DS_Set_Equipped = 0`
+  a hodnoty podle položek menu, `school_mode` je enum, položky XML zapisují `DSModeSchool`,
+  závislé volby se zašedí (`UpdateDSMenuOptions`). PR #1 (výjimka Viroledan Blade) doplněn merge mainu.
+- Jádro má `GetVisibleItemName(slot, out name)`; patch pro WPIAO wrapuje jen ji a je bez logiky setu.
+- Výjimka `Angivare` (hlášeno na Nexusu): definice se jmenuje stejně ve vanille i ve W3EE,
+  `Angivare_crafted` jako item nikde neexistuje, jen jako jméno v receptu W3EE.
+- Úklid: patche SOH a AHW smazány včetně balení a workflow, `docs/dsc_variants_test.xml` smazán,
+  verze core 3.0.0, patch WPIAO 2.0.0, nový README.

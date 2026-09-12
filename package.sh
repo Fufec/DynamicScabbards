@@ -4,10 +4,8 @@ set -euo pipefail
 comp="${1:-}"
 case "$comp" in
   core)  mod="modDynamicScabbards";   with_bin=1; zipname="DynamicScabbards.zip" ;;
-  soh)   mod="mod0_DS_SOH_Patch";     with_bin=0; zipname="DynamicScabbardsSwordsOnHipPatch.zip" ;;
-  ahw)   mod="mod0_DS_AHW_Patch";     with_bin=0; zipname="DynamicScabbardsAutoHideWeaponsForCloaks.zip" ;;
   wpiao) mod="mod0_DS_WPIAO_Patch";   with_bin=0; zipname="DynamicScabbardsWearPreviewItemsAsOutfitsPatch.zip" ;;
-  *) echo "usage: ./package.sh <core|soh|ahw|wpiao>" >&2; exit 2 ;;
+  *) echo "usage: ./package.sh <core|wpiao>" >&2; exit 2 ;;
 esac
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

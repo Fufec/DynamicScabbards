@@ -8,7 +8,7 @@ on:
       component:
         description: Component
         type: choice
-        options: [core, soh, ahw, wpiao]
+        options: [core, wpiao]
         required: true
       dry_run:
         description: Build only (do not upload to Nexus)
@@ -53,8 +53,6 @@ jobs:
         run: |
           case "${{ steps.meta.outputs.component }}" in
             core)  echo "file_id=${{ vars.NEXUS_FILE_ID_CORE }}"  >> "$GITHUB_OUTPUT" ;;
-            soh)   echo "file_id=${{ vars.NEXUS_FILE_ID_SOH }}"   >> "$GITHUB_OUTPUT" ;;
-            ahw)   echo "file_id=${{ vars.NEXUS_FILE_ID_AHW }}"   >> "$GITHUB_OUTPUT" ;;
             wpiao) echo "file_id=${{ vars.NEXUS_FILE_ID_WPIAO }}" >> "$GITHUB_OUTPUT" ;;
           esac
 
