@@ -20,14 +20,14 @@ class DynamicScabbards
         enabled = value;
     }
 
-    public function SetChestplateMode(value : bool)
-    {
-        chestplate_mode = value;
-    }
-
     public function IsEnabled() : bool
     {
         return enabled;
+    }
+
+    public function SetChestplateMode(value : bool)
+    {
+        chestplate_mode = value;
     }
 
     // The bundle adds variants to every scabbard definition: while the invisible school item is mounted,
