@@ -320,22 +320,27 @@ class DynamicScabbards
         return false;
     }
 
-    // only the sword and armor slots matter; in chestplate mode gloves, pants and boots do not
-    public function TriggersScabbardUpdate(slot : EEquipmentSlots) : bool
+    // the equipped item of a slot changed, also inside the inventory: the paperdoll shows mounted
+    // items, so the school scabbard follows the sword and armor right away. Only the sword and
+    // armor slots matter; in chestplate mode gloves, pants and boots do not
+    public function OnEquipmentChanged(slot : EEquipmentSlots)
     {
         switch (slot)
         {
             case EES_SteelSword:
             case EES_SilverSword:
             case EES_Armor:
-                return true;
+                SetScabbards();
+                return;
             case EES_Boots:
             case EES_Pants:
             case EES_Gloves:
-                return !chestplate_mode;
+                if (!chestplate_mode)
+                {
+                    SetScabbards();
+                }
+                return;
         }
-
-        return false;
     }
 
     public function SetScabbards()
@@ -430,10 +435,7 @@ function OnAfterLoadingScreenGameStart()
 {
     wrappedMethod();
 
-    if (thePlayer.GetDynamicScabbards().IsEnabled())
-    {
-        thePlayer.ds.SetScabbards();
-    }
+    thePlayer.GetDynamicScabbards().SetScabbards();
 }
 
 // the player changed (to Ciri and back): Geralt comes back with his inventory and the school item
@@ -443,10 +445,7 @@ function OnPlayerChanged()
 {
     wrappedMethod();
 
-    if (thePlayer.GetDynamicScabbards().IsEnabled())
-    {
-        thePlayer.ds.SetScabbards();
-    }
+    thePlayer.GetDynamicScabbards().SetScabbards();
 }
 
 @wrapMethod(W3PlayerWitcher)
@@ -461,12 +460,7 @@ function EquipItemInGivenSlot(item : SItemUniqueId, slot : EEquipmentSlots, igno
         return result;
     }
 
-    // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
-    // the equipped sword and armor right away
-    if (thePlayer.GetDynamicScabbards().IsEnabled() && thePlayer.ds.TriggersScabbardUpdate(slot))
-    {
-        thePlayer.ds.SetScabbards();
-    }
+    thePlayer.GetDynamicScabbards().OnEquipmentChanged(slot);
 
     return result;
 }
@@ -483,12 +477,7 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
         return result;
     }
 
-    // also inside the inventory: the paperdoll shows mounted items, so the school scabbard follows
-    // the equipped sword and armor right away
-    if (thePlayer.GetDynamicScabbards().IsEnabled() && thePlayer.ds.TriggersScabbardUpdate(slot))
-    {
-        thePlayer.ds.SetScabbards();
-    }
+    thePlayer.GetDynamicScabbards().OnEquipmentChanged(slot);
 
     return result;
 }
@@ -518,6 +507,7 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
     var groupName : name;
     var inGameConfig: CInGameConfigWrapper;
     var modEnabled: bool;
+    var scabbards : DynamicScabbards;
 
     result = wrappedMethod(groupId, optionName, optionValue);
 
@@ -534,22 +524,22 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
         return result;
 	}
 
-    thePlayer.GetDynamicScabbards();
+    scabbards = thePlayer.GetDynamicScabbards();
 
     switch(optionName)
     {
         case 'DSEnabled':
             modEnabled = inGameConfig.GetVarValue(groupName, 'DSEnabled');
 
-            thePlayer.ds.SetEnabled(modEnabled);
-            thePlayer.ds.SetScabbards();
+            scabbards.SetEnabled(modEnabled);
+            scabbards.SetScabbards();
             UpdateChestplateModeOption(!modEnabled);
 
             break;
             
         case 'DSModeChestplate':
-            thePlayer.ds.SetChestplateMode(inGameConfig.GetVarValue(groupName, 'DSModeChestplate'));
-            thePlayer.ds.SetScabbards();
+            scabbards.SetChestplateMode(inGameConfig.GetVarValue(groupName, 'DSModeChestplate'));
+            scabbards.SetScabbards();
             break;
     }
 
