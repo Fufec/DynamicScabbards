@@ -9,7 +9,8 @@ enum DSSchoolSet
     DS_Set_Manticore = 5,
     DS_Set_Wolf = 6,
     DS_Set_Viper = 7,
-    DS_Set_ForgottenWolf = 8
+    DS_Set_ForgottenWolf = 8,
+    DS_Set_DolBlathanna = 9,
 }
 
 class DynamicScabbards
@@ -126,6 +127,7 @@ class DynamicScabbards
             case DS_Set_Wolf:              return 'ds_steel_wolf';
             case DS_Set_Viper:             return 'ds_steel_viper';
             case DS_Set_ForgottenWolf:     return 'ds_steel_netflix';
+            case DS_Set_DolBlathanna:      return 'ds_steel_dolblathanna';
             default:                       return '';
         }
     }
@@ -142,6 +144,7 @@ class DynamicScabbards
             case DS_Set_Wolf:              return 'ds_silver_wolf';
             case DS_Set_Viper:             return 'ds_silver_viper';
             case DS_Set_ForgottenWolf:     return 'ds_silver_netflix';
+            case DS_Set_DolBlathanna:      return 'ds_silver_dolblathanna';
             default:                       return '';
         }
     }
@@ -285,6 +288,8 @@ class DynamicScabbards
         if (MatchesSchool(armor, gloves, pants, boots, "Viper"))         { school = DS_Set_Viper;          return true;}
         if (MatchesSchool(armor, gloves, pants, boots, "Manticore"))     { school = DS_Set_Manticore;      return true;}
 
+        if (MatchesSchool(armor, gloves, pants, boots, "Dol Blathanna")) { school = DS_Set_DolBlathanna;   return true;}
+        
         return false;
     }
 

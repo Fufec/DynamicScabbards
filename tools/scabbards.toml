@@ -94,7 +94,7 @@
 "NPC Scabbard Sabre" = "W3EE"
 "NPC Scabbard Short" = "W3EE"
 "olgierd_sabre_curved_scabbard" = "BrothersInArms"
-"scabbard_steel_dol_blathanna" = "W3EE"
+"scabbard_steel_dol_blathanna" = "vanilla"
 "steel_blaviken_scabbard" = "W3EE"
 
 [silver_scabbards]
@@ -136,5 +136,5 @@
 "scabbard_silver_wolf_ep2" = "vanilla"
 "scabbard_silver_zirael" = "vanilla"
 "Witcher Silver Sword Scabbard" = "vanilla"
-"scabbard_silver_dol_blathanna" = "W3EE"
+"scabbard_silver_dol_blathanna" = "vanilla"
 "silver_blaviken_scabbard" = "W3EE"

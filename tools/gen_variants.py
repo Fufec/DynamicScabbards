@@ -13,14 +13,15 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # templates of the vanilla school scabbards, see GetSteelMarker/GetSilverMarker in DynamicScabbards.ws
 SCHOOLS = {
-    'kaermorhen': dict(steel='scabbard_steel_1_01',              silver='scabbard_silver_1_01'),
-    'bear':       dict(steel='witcher_steel_bear_scabbard',      silver='witcher_silver_bear_scabbard'),
-    'lynx':       dict(steel='witcher_steel_lynx_scabbard',      silver='witcher_silver_lynx_scabbard'),
-    'gryphon':    dict(steel='witcher_steel_gryphon_scabbard',   silver='witcher_silver_gryphon_scabbard'),
-    'wolf':       dict(steel='witcher_steel_wolf_scabbard',      silver='witcher_silver_wolf_scabbard'),      # dlc10
-    'manticore':  dict(steel='witcher_steel_wolf_scabbard_ep2',  silver='witcher_silver_wolf_scabbard_ep2'),  # Blood and Wine, Red Wolf School
-    'viper':      dict(steel='scabbard_steel_1_02',              silver='scabbard_silver_1_05'),
-    'netflix':    dict(steel='witcher_steel_netflix_scabbard',   silver='witcher_silver_netflix_scabbard'),
+    'kaermorhen':   dict(steel='scabbard_steel_1_01',              silver='scabbard_silver_1_01'),
+    'bear':         dict(steel='witcher_steel_bear_scabbard',      silver='witcher_silver_bear_scabbard'),
+    'lynx':         dict(steel='witcher_steel_lynx_scabbard',      silver='witcher_silver_lynx_scabbard'),
+    'gryphon':      dict(steel='witcher_steel_gryphon_scabbard',   silver='witcher_silver_gryphon_scabbard'),
+    'wolf':         dict(steel='witcher_steel_wolf_scabbard',      silver='witcher_silver_wolf_scabbard'),      # dlc10
+    'manticore':    dict(steel='witcher_steel_wolf_scabbard_ep2',  silver='witcher_silver_wolf_scabbard_ep2'),  # Blood and Wine, Red Wolf School
+    'viper':        dict(steel='scabbard_steel_1_02',              silver='scabbard_silver_1_05'),
+    'netflix':      dict(steel='witcher_steel_netflix_scabbard',   silver='witcher_silver_netflix_scabbard'),
+    'dolblathanna': dict(steel='scabbard_steel_3_07',              silver='scabbard_silver_3_07'),
 }
 KINDS = {'steel_scabbards': 'steel', 'silver_scabbards': 'silver'}  # scabbard category -> marker kind
 

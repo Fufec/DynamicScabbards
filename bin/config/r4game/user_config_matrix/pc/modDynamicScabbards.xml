@@ -16,6 +16,7 @@
 					<Option id="6" displayName="ds_mode_wolf"><Entry varId="DSModeSchool" value="6" /></Option>
 					<Option id="7" displayName="ds_mode_viper"><Entry varId="DSModeSchool" value="7" /></Option>
 					<Option id="8" displayName="ds_mode_forgotten_wolf"><Entry varId="DSModeSchool" value="8" /></Option>
+					<Option id="9" displayName="ds_mode_dol_blathanna"><Entry varId="DSModeSchool" value="9" /></Option>
 				</OptionsArray>
 			</Var>
             <Var id="DSModeChestplate" displayName="ds_mode_chestplate" displayType="TOGGLE" />
