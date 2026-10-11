@@ -1,4 +1,4 @@
-;meta[language=en]
+﻿;meta[language=en]
 ;       id|key(hex)|key(str)|text
 1112530000|        |panel_Mods|Mods
 1112530001|        |panel_DS_settings|Dynamic Scabbards
@@ -6,6 +6,7 @@
 1112530003|        |option_ds_enabled|Mod enabled
 1112530004|        |option_ds_mode_chestplate|Only chestplate armor piece required
 1112530005|        |option_ds_mode_school|Use scabbards from witcher school
+1112530006|        |option_ds_prefer_transmog|Use transmog appearance
 1112530010|        |preset_value_ds_mode_dynamic|Equipped
 1112530011|        |preset_value_ds_mode_kaer_morhen|Kaer Morhen
 1112530012|        |preset_value_ds_mode_bear|Bear

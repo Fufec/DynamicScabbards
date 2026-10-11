@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-16"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <UserConfig>
 	<Group id="DSOptions" displayName="Mods.DS_settings">
 		<VisibleVars>
@@ -19,6 +19,7 @@
 				</OptionsArray>
 			</Var>
             <Var id="DSModeChestplate" displayName="ds_mode_chestplate" displayType="TOGGLE" />
+			<Var id="DSPreferTransmog" displayName="ds_prefer_transmog" displayType="TOGGLE" />
 		</VisibleVars>
 	</Group>
 </UserConfig>

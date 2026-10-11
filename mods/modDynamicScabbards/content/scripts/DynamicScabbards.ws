@@ -1,4 +1,4 @@
-// the values match the school options in the menu
+﻿// the values match the school options in the menu
 enum DSSchoolSet
 {
     DS_Set_Equipped = 0, // follow the equipped set
@@ -14,40 +14,56 @@ enum DSSchoolSet
 
 class DynamicScabbards
 {
-    var enabled : bool; // mod enabled
-    var chestplate_mode : bool; // if true, only chestplate armor piece will be required for the swap to occur
-    var school_mode : DSSchoolSet; // DS_Set_Equipped, or a fixed school chosen in the menu
-
-    public function SetEnabled(value : bool)
+    // the settings are read from the game's config when needed, so they are always the menu's;
+    // without the menu xml (mod.io) the value is "" and the default applies
+    function GetOption(option : name, default_value : string) : string
     {
-        enabled = value;
+        var value : string;
+
+        value = theGame.GetInGameConfigWrapper().GetVarValue('DSOptions', option);
+
+        if (value == "")
+        {
+            return default_value;
+        }
+
+        return value;
     }
 
+    // mod enabled
     public function IsEnabled() : bool
     {
-        return enabled;
+        return GetOption('DSEnabled', "true") == "true";
     }
 
-    public function SetChestplateMode(value : bool)
+    // if true, only chestplate armor piece will be required for the swap to occur
+    function IsChestplateMode() : bool
     {
-        chestplate_mode = value;
+        return GetOption('DSModeChestplate', "false") == "true";
     }
 
-    public function SetSchoolMode(value : DSSchoolSet)
+    // DS_Set_Equipped, or a fixed school chosen in the menu
+    function GetSchoolMode() : DSSchoolSet
     {
-        school_mode = value;
+        return (DSSchoolSet)StringToInt(GetOption('DSModeSchool', "0"));
     }
 
-    // the bundle adds variants to every scabbard definition: while the marker of a school is mounted,
-    // the engine spawns the bound scabbard from the school template. The script only keeps the right marker mounted
+    // armor and swords are read by their transmog appearance
+    function PrefersTransmog() : bool
+    {
+        return GetOption('DSPreferTransmog', "true") == "true";
+    }
+
+    // the scabbards get a template override (native transmog) pointing at the school scabbard item:
+    // the engine spawns them from that item, and the override is saved with the item
     function SteelCategory() : name
     {
-        return 'ds_steel';
+        return 'steel_scabbards';
     }
 
     function SilverCategory() : name
     {
-        return 'ds_silver';
+        return 'silver_scabbards';
     }
 
     // Some weapons do not match the regular scabbard size. We check for those and exclude them
@@ -113,40 +129,87 @@ class DynamicScabbards
         return false;
     }
 
-    // the marker of the school: an invisible item defined in the bundle
-    function GetSteelMarker(school: DSSchoolSet) : name
+    // the vanilla school scabbard items the overrides point at
+    function GetSteelScabbard(school : DSSchoolSet) : name
     {
         switch (school)
         {
-            case DS_Set_KaerMorhen:        return 'ds_steel_kaermorhen';
-            case DS_Set_Bear:              return 'ds_steel_bear';
-            case DS_Set_Cat:               return 'ds_steel_lynx';
-            case DS_Set_Griffin:           return 'ds_steel_gryphon';
-            case DS_Set_Manticore:         return 'ds_steel_manticore';
-            case DS_Set_Wolf:              return 'ds_steel_wolf';
-            case DS_Set_Viper:             return 'ds_steel_viper';
-            case DS_Set_ForgottenWolf:     return 'ds_steel_netflix';
+            case DS_Set_KaerMorhen:        return 'scabbard_steel_1_01';
+            case DS_Set_Bear:              return 'scabbard_steel_bear_01';
+            case DS_Set_Cat:               return 'scabbard_steel_lynx_01';
+            case DS_Set_Griffin:           return 'scabbard_steel_gryphon_01';
+            case DS_Set_Manticore:         return 'scabbard_steel_wolf_ep2';
+            case DS_Set_Wolf:              return 'scabbard_steel_wolf_01';
+            case DS_Set_Viper:             return 'scabbard_steel_1_02';
+            case DS_Set_ForgottenWolf:     return 'scabbard_steel_netflix_01';
             default:                       return '';
         }
     }
 
-    function GetSilverMarker(school: DSSchoolSet) : name
+    function GetSilverScabbard(school : DSSchoolSet) : name
     {
         switch (school)
         {
-            case DS_Set_KaerMorhen:        return 'ds_silver_kaermorhen';
-            case DS_Set_Bear:              return 'ds_silver_bear';
-            case DS_Set_Cat:               return 'ds_silver_lynx';
-            case DS_Set_Griffin:           return 'ds_silver_gryphon';
-            case DS_Set_Manticore:         return 'ds_silver_manticore';
-            case DS_Set_Wolf:              return 'ds_silver_wolf';
-            case DS_Set_Viper:             return 'ds_silver_viper';
-            case DS_Set_ForgottenWolf:     return 'ds_silver_netflix';
+            case DS_Set_KaerMorhen:        return 'scabbard_silver_1_01';
+            case DS_Set_Bear:              return 'scabbard_silver_bear_01';
+            case DS_Set_Cat:               return 'scabbard_silver_lynx_01';
+            case DS_Set_Griffin:           return 'scabbard_silver_gryphon_01';
+            case DS_Set_Manticore:         return 'scabbard_silver_wolf_ep2';
+            case DS_Set_Wolf:              return 'scabbard_silver_wolf_01';
+            case DS_Set_Viper:             return 'scabbard_silver_1_05';
+            case DS_Set_ForgottenWolf:     return 'scabbard_silver_netflix_01';
             default:                       return '';
         }
     }
 
-    function ClearMarker(category : name)
+    // vanilla clears an override with 'None' (transmog menu) or '' (debug command)
+    function HasOverride(item : SItemUniqueId) : bool
+    {
+        return IsNameValid(thePlayer.GetInventory().GetItemTemplateOverride(item));
+    }
+
+    // the engine spawns a new entity only on mount
+    function Remount(item : SItemUniqueId)
+    {
+        var inv : CInventoryComponent;
+
+        inv = thePlayer.GetInventory();
+
+        if (inv.IsItemMounted(item))
+        {
+            inv.UnmountItem(item, true);
+            inv.MountItem(item);
+        }
+    }
+
+    function SetOverride(item : SItemUniqueId, scabbard : name)
+    {
+        var inv : CInventoryComponent;
+
+        inv = thePlayer.GetInventory();
+
+        if (inv.GetItemTemplateOverride(item) == scabbard)
+        {
+            return;
+        }
+
+        inv.SetItemTemplateOverride(item, scabbard);
+        Remount(item);
+    }
+
+    function ClearOverride(item : SItemUniqueId)
+    {
+        if (!HasOverride(item))
+        {
+            return;
+        }
+
+        SetOverride(item, 'None');
+    }
+
+    // every sword has its own scabbard item; only the mounted one (of the equipped sword)
+    // gets the override, the others are cleared
+    function SetCategoryOverride(category : name, scabbard : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -159,42 +222,25 @@ class DynamicScabbards
         {
             if (inv.IsItemMounted(ids[i]))
             {
-                inv.UnmountItem(ids[i], true);
+                SetOverride(ids[i], scabbard);
             }
-
-            inv.RemoveItem(ids[i], 1);
+            else
+            {
+                ClearOverride(ids[i]);
+            }
         }
     }
 
-    function IsMarkerMounted(category : name, marker : name) : bool
+    function ClearCategoryOverride(category : name)
     {
-        var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
+        var i : int;
 
-        inv = thePlayer.GetInventory();
-        ids = inv.GetItemsByCategory(category);
+        ids = thePlayer.GetInventory().GetItemsByCategory(category);
 
-        return ids.Size() == 1 && inv.GetItemName(ids[0]) == marker && inv.IsItemMounted(ids[0]);
-    }
-
-    function SetMarker(category : name, marker : name)
-    {
-        var inv : CInventoryComponent;
-        var ids : array<SItemUniqueId>;
-
-        if (IsMarkerMounted(category, marker))
+        for (i = 0; i < ids.Size(); i += 1)
         {
-            return;
-        }
-
-        ClearMarker(category);
-
-        inv = thePlayer.GetInventory();
-        ids = inv.AddAnItem(marker, 1, true, true);
-
-        if (ids.Size() > 0)
-        {
-            inv.MountItem(ids[0]);
+            ClearOverride(ids[i]);
         }
     }
 
@@ -202,74 +248,55 @@ class DynamicScabbards
     {
         var inv : CInventoryComponent;
         var sword_steel : SItemUniqueId;
-        var steel_name : name;
 
         inv = thePlayer.GetInventory();
 
-        if (!inv.GetItemEquippedOnSlot(EES_SteelSword, sword_steel))
+        if (!inv.GetItemEquippedOnSlot(EES_SteelSword, sword_steel) ||
+            !inv.IsItemSteelSwordUsableByPlayer(sword_steel)        ||
+            IsExcludedSteelSword(GetVisibleName(sword_steel)))
         {
-            return; // no sword, keep the marker
-        }
-
-        steel_name = inv.GetItemName(sword_steel);
-
-        if (!inv.IsItemSteelSwordUsableByPlayer(sword_steel) || IsExcludedSteelSword(steel_name))
-        {
-            ClearMarker(SteelCategory());
+            ClearCategoryOverride(SteelCategory());
             return;
         }
 
-        SetMarker(SteelCategory(), GetSteelMarker(school));
+        SetCategoryOverride(SteelCategory(), GetSteelScabbard(school));
     }
 
     function UpdateSilverScabbard(school : DSSchoolSet)
     {
         var inv : CInventoryComponent;
         var sword_silver : SItemUniqueId;
-        var silver_name : name;
 
         inv = thePlayer.GetInventory();
 
-        if (!inv.GetItemEquippedOnSlot(EES_SilverSword, sword_silver))
+        if (!inv.GetItemEquippedOnSlot(EES_SilverSword, sword_silver) ||
+            !inv.IsItemSilverSwordUsableByPlayer(sword_silver)        ||
+            IsExcludedSilverSword(GetVisibleName(sword_silver)))
         {
-            return; // no sword, keep the marker
-        }
-
-        silver_name = inv.GetItemName(sword_silver);
-
-        if (!inv.IsItemSilverSwordUsableByPlayer(sword_silver) || IsExcludedSilverSword(silver_name))
-        {
-            ClearMarker(SilverCategory());
+            ClearCategoryOverride(SilverCategory());
             return;
         }
 
-        SetMarker(SilverCategory(), GetSilverMarker(school));
+        SetCategoryOverride(SilverCategory(), GetSilverScabbard(school));
     }
 
     function RestoreVanillaScabbards()
     {
-        ClearMarker(SteelCategory());
-        ClearMarker(SilverCategory());
+        ClearCategoryOverride(SteelCategory());
+        ClearCategoryOverride(SilverCategory());
     }
 
-    // Set detection: full-set or chestplate-only mode based on chestplate_mode setting
+    // set detection: every piece has the school in its name
     function MatchesSchool(armor : name, gloves : name, pants : name, boots : name, school_name : string) : bool
     {
-        if (chestplate_mode)
-        {
-            return StrContains(armor, school_name);
-        }
-        else
-        {
-            return (StrContains(armor, school_name)  &&
-                    StrContains(gloves, school_name) &&
-                    StrContains(pants, school_name)  &&
-                    StrContains(boots, school_name));
-        }
+        return (StrContains(armor, school_name)  &&
+                StrContains(gloves, school_name) &&
+                StrContains(pants, school_name)  &&
+                StrContains(boots, school_name));
     }
 
     // order matters: "Red Wolf" contains "Wolf"
-    function GetSchoolFromArmor(armor : name, gloves : name, pants : name, boots : name, out school: DSSchoolSet) : bool
+    function GetSchoolFromArmor(armor : name, gloves : name, pants : name, boots : name, out school : DSSchoolSet) : bool
     {
         if (MatchesSchool(armor, gloves, pants, boots, "Starting"))      { school = DS_Set_KaerMorhen;     return true;}
         if (MatchesSchool(armor, gloves, pants, boots, "Bear"))          { school = DS_Set_Bear;           return true;}
@@ -288,7 +315,23 @@ class DynamicScabbards
         return false;
     }
 
-    // the item shown on the slot; the WPIAO patch wraps this to return the outfit item
+    // the item the transmog shows, if that setting is on
+    function GetVisibleName(item : SItemUniqueId) : name
+    {
+        var inv : CInventoryComponent;
+        var appearance : name;
+
+        inv = thePlayer.GetInventory();
+        appearance = inv.GetItemTemplateOverride(item);
+
+        if (PrefersTransmog() && IsNameValid(appearance))
+        {
+            return appearance;
+        }
+
+        return inv.GetItemName(item);
+    }
+
     function GetVisibleItemName(slot : EEquipmentSlots, out item_name : name) : bool
     {
         var inv : CInventoryComponent;
@@ -301,16 +344,19 @@ class DynamicScabbards
             return false;
         }
 
-        item_name = inv.GetItemName(item);
+        item_name = GetVisibleName(item);
         return true;
     }
 
-    public function GetEquippedSchool(out school: DSSchoolSet) : bool
+    public function GetEquippedSchool(out school : DSSchoolSet) : bool
     {
         var armor : name;
         var gloves : name;
         var pants : name;
         var boots : name;
+        var school_mode : DSSchoolSet;
+
+        school_mode = GetSchoolMode();
 
         if (school_mode != DS_Set_Equipped)
         {
@@ -318,12 +364,12 @@ class DynamicScabbards
             return true;
         }
 
-        if (chestplate_mode)
+        if (IsChestplateMode())
         {
-            // only read chestplate armor piece
+            // only read chestplate armor piece, it stands for every piece
             if (GetVisibleItemName(EES_Armor, armor))
             {
-                return GetSchoolFromArmor(armor, '', '', '', school);
+                return GetSchoolFromArmor(armor, armor, armor, armor, school);
             }
         }
         else
@@ -354,7 +400,7 @@ class DynamicScabbards
             case EES_Pants:
             case EES_Gloves:
                 // In chestplate mode, gloves/pants/boots don't trigger updates
-                if (!chestplate_mode)
+                if (!IsChestplateMode())
                 {
                     SetScabbards();
                 }
@@ -371,7 +417,7 @@ class DynamicScabbards
             return;
         }
 
-        if (!enabled || !GetEquippedSchool(school))
+        if (!IsEnabled() || !GetEquippedSchool(school))
         {
             RestoreVanillaScabbards();
             return;
@@ -379,6 +425,142 @@ class DynamicScabbards
 
         UpdateSteelScabbard(school);
         UpdateSilverScabbard(school);
+    }
+
+    // the invisible markers of 3.0 (categories ds_steel, ds_silver) can still be in older saves
+    public function RemoveOldMarkers()
+    {
+        var inv : CInventoryComponent;
+        var ids : array<SItemUniqueId>;
+        var i : int;
+
+        if (!GetWitcherPlayer())
+        {
+            return;
+        }
+
+        inv = thePlayer.GetInventory();
+        ids = inv.GetItemsByCategory('ds_steel');
+        ArrayOfIdsAppend(ids, inv.GetItemsByCategory('ds_silver'));
+
+        for (i = 0; i < ids.Size(); i += 1)
+        {
+            if (inv.IsItemMounted(ids[i]))
+            {
+                inv.UnmountItem(ids[i], true);
+            }
+
+            inv.RemoveItem(ids[i], 1);
+        }
+    }
+
+    // the inventory preview has an inventory of its own, whose items have no override; a scabbard
+    // it spawns from there comes from the scabbard's own template (seen with Aerondight)
+    function IsScabbard(entity : CItemEntity) : bool
+    {
+        var category : name;
+
+        category = entity.GetItemCategory();
+
+        return category == SteelCategory() || category == SilverCategory();
+    }
+
+    // the preview is an actor, but neither the player nor an NPC, and exists only in a menu
+    function IsPreview(entity : CEntity) : bool
+    {
+        var actor : CActor;
+        var player : CR4Player;
+        var npc : CNewNPC;
+
+        actor = (CActor)entity;
+        player = (CR4Player)entity;
+        npc = (CNewNPC)entity;
+
+        return actor && !player && !npc && theGame.GetGuiManager().IsAnyMenu();
+    }
+
+    // the template the entity file of an item is named after
+    function GetTemplate(item_name : name) : string
+    {
+        return StrLower(thePlayer.GetInventory().GetItemTemplateByName(item_name));
+    }
+
+    // the override of the player's mounted scabbard of that name, '' if it has none
+    function GetMountedOverride(scabbard : name) : name
+    {
+        var inv : CInventoryComponent;
+        var ids : array<SItemUniqueId>;
+        var i : int;
+
+        inv = thePlayer.GetInventory();
+        ids = inv.GetItemsIds(scabbard);
+
+        for (i = 0; i < ids.Size(); i += 1)
+        {
+            if (inv.IsItemMounted(ids[i]) && HasOverride(ids[i]))
+            {
+                return inv.GetItemTemplateOverride(ids[i]);
+            }
+        }
+
+        return '';
+    }
+
+    // only the copy from the scabbard's own template is recognized:
+    // a template that does not match the entity file never remounts anything
+    function IsOwnTemplateCopy(entity : CItemEntity, scabbard : name, appearance : name) : bool
+    {
+        var own_template : string;
+
+        own_template = GetTemplate(scabbard);
+
+        return (own_template != ""                      &&
+                own_template != GetTemplate(appearance) &&
+                StrEndsWith(StrLower(entity.GetReadableName()), own_template + ".w2ent"));
+    }
+
+    // the preview's item gets the override; only that scabbard is remounted
+    function SetPreviewOverride(preview : CEntity, entity : CItemEntity, appearance : name)
+    {
+        var inv : CInventoryComponent;
+        var item : SItemUniqueId;
+
+        inv = ((CGameplayEntity)preview).GetInventory();
+
+        if (!inv)
+        {
+            return;
+        }
+
+        item = inv.GetItemByItemEntity(entity);
+
+        if (!inv.IsIdValid(item))
+        {
+            return;
+        }
+
+        inv.SetItemTemplateOverride(item, appearance);
+        inv.UnmountItem(item, true);
+        inv.MountItem(item);
+    }
+
+    public function OnItemAttached(entity : CItemEntity, parent_entity : CEntity, item_name : name)
+    {
+        var appearance : name;
+
+        if (!IsScabbard(entity) || !IsPreview(parent_entity))
+        {
+            return;
+        }
+
+        appearance = GetMountedOverride(item_name);
+
+        if (appearance == '' || !IsOwnTemplateCopy(entity, item_name, appearance))
+        {
+            return;
+        }
+
+        SetPreviewOverride(parent_entity, entity, appearance);
     }
 }
 
@@ -388,14 +570,10 @@ public var ds : DynamicScabbards;
 @addMethod(CR4Player)
 public function InitDynamicScabbards()
 {
-    var currentVersion: string = "3.00";
-    var currentVersionFloat: float = 3.00;
+    var currentVersion : string = "4.00";
+    var currentVersionFloat : float = 4.00;
 
-    var enabledValue: string;
-    var chestModeValue: string;
-    var schoolModeValue: string;
-
-    var inGameConfig: CInGameConfigWrapper;
+    var inGameConfig : CInGameConfigWrapper;
 
     this.ds = new DynamicScabbards in this;
     inGameConfig = theGame.GetInGameConfigWrapper();
@@ -405,45 +583,20 @@ public function InitDynamicScabbards()
         inGameConfig.SetVarValue('DSOptions', 'DSEnabled', true);
         inGameConfig.SetVarValue('DSOptions', 'DSModeChestplate', false);
         inGameConfig.SetVarValue('DSOptions', 'DSModeSchool', 0);
+        inGameConfig.SetVarValue('DSOptions', 'DSPreferTransmog', true);
         inGameConfig.SetVarValue('DSOptions', 'DSVersion', currentVersion);
-        theGame.SaveUserSettings();
+
+        // without the menu xml (mod.io) nothing is stored, so there is nothing to save
+        if (inGameConfig.GetVarValue('DSOptions', 'DSVersion'))
+        {
+            theGame.SaveUserSettings();
+        }
     }
     else if (StringToFloat(inGameConfig.GetVarValue('DSOptions', 'DSVersion')) < currentVersionFloat)
     {
+        inGameConfig.SetVarValue('DSOptions', 'DSPreferTransmog', true); // new in 4.00
         inGameConfig.SetVarValue('DSOptions', 'DSVersion', currentVersion);
         theGame.SaveUserSettings();
-    }
-
-    // Load settings with fallbacks for missing XML
-    enabledValue = inGameConfig.GetVarValue('DSOptions', 'DSEnabled');
-    chestModeValue = inGameConfig.GetVarValue('DSOptions', 'DSModeChestplate');
-    schoolModeValue = inGameConfig.GetVarValue('DSOptions', 'DSModeSchool');
-
-    if (enabledValue != "")
-    {
-        this.ds.SetEnabled(enabledValue);
-    }
-    else
-    {
-        this.ds.SetEnabled(true); // missing xml defaults to enabling the mod
-    }
-
-    if (chestModeValue != "")
-    {
-        this.ds.SetChestplateMode(chestModeValue);
-    }
-    else
-    {
-        this.ds.SetChestplateMode(false); // missing xml defaults to chestplate mode to be disabled
-    }
-
-    if (schoolModeValue != "")
-    {
-        this.ds.SetSchoolMode((DSSchoolSet)StringToInt(schoolModeValue));
-    }
-    else
-    {
-        this.ds.SetSchoolMode(DS_Set_Equipped); // missing xml defaults to following the equipped set
     }
 }
 
@@ -465,6 +618,7 @@ function OnAfterLoadingScreenGameStart()
 {
     wrappedMethod();
 
+    thePlayer.GetDynamicScabbards().RemoveOldMarkers();
     thePlayer.GetDynamicScabbards().SetScabbards();
 }
 
@@ -501,7 +655,8 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
 
     result = wrappedMethod(slot, reequipped);
 
-    if (!result)
+    // reequipped: an equip into the slot follows and updates the scabbards
+    if (!result || reequipped)
     {
         return result;
     }
@@ -511,7 +666,21 @@ function UnequipItemFromSlot(slot : EEquipmentSlots, optional reequipped : bool)
     return result;
 }
 
-// update the menu swf: the school choice needs the mod enabled, the chestplate armor piece only setting needs the mod enabled and the equipped set followed.
+// every item the engine attaches, to anyone: the inventory preview is checked for its scabbards
+@wrapMethod(CItemEntity)
+function OnAttachmentUpdate(parentEntity : CEntity, itemName : name)
+{
+    wrappedMethod(parentEntity, itemName);
+
+    // an event: no bare return; the main menu has no player
+    if (GetWitcherPlayer())
+    {
+        thePlayer.GetDynamicScabbards().OnItemAttached(this, parentEntity, itemName);
+    }
+}
+
+// update the menu swf: the school choice and the transmog setting need the mod enabled,
+// the chestplate armor piece only setting needs the mod enabled and the equipped set followed.
 // Disabling the options to interact with the menu when the mod is turned off prevents race conditions and exceptions
 @addMethod(CR4IngameMenu)
 function UpdateDSMenuOptions(modEnabled : bool, schoolMode : DSSchoolSet)
@@ -519,6 +688,7 @@ function UpdateDSMenuOptions(modEnabled : bool, schoolMode : DSSchoolSet)
     var dataArray : CScriptedFlashArray;
     var schoolOption : CScriptedFlashObject;
     var chestplateOption : CScriptedFlashObject;
+    var transmogOption : CScriptedFlashObject;
 
     dataArray = m_flashValueStorage.CreateTempFlashArray();
 
@@ -532,6 +702,11 @@ function UpdateDSMenuOptions(modEnabled : bool, schoolMode : DSSchoolSet)
     chestplateOption.SetMemberFlashBool('disabled', !modEnabled || schoolMode != DS_Set_Equipped);
     dataArray.PushBackFlashObject(chestplateOption);
 
+    transmogOption = m_flashValueStorage.CreateTempFlashObject();
+    transmogOption.SetMemberFlashUInt('tag', NameToFlashUInt('DSPreferTransmog'));
+    transmogOption.SetMemberFlashBool('disabled', !modEnabled);
+    dataArray.PushBackFlashObject(transmogOption);
+
     m_flashValueStorage.SetFlashArray('options.update_disabled', dataArray);
 }
 
@@ -540,48 +715,37 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
 {
     var result : bool;
     var groupName : name;
-    var inGameConfig: CInGameConfigWrapper;
-    var modEnabled: bool;
+    var inGameConfig : CInGameConfigWrapper;
+    var modEnabled : bool;
     var schoolMode : DSSchoolSet;
-    var scabbards : DynamicScabbards;
 
     result = wrappedMethod(groupId, optionName, optionValue);
 
-    if(result)
+    if (result)
     {
-       return result;
+        return result;
     }
 
     inGameConfig = theGame.GetInGameConfigWrapper();
     groupName = inGameConfig.GetGroupName(groupId);
 
-    if(groupName != 'DSOptions')
+    if (groupName != 'DSOptions')
     {
         return result;
     }
 
-    scabbards = thePlayer.GetDynamicScabbards();
-    modEnabled = inGameConfig.GetVarValue(groupName, 'DSEnabled');
-    schoolMode = (DSSchoolSet)StringToInt(inGameConfig.GetVarValue(groupName, 'DSModeSchool'));
-
-    switch(optionName)
+    if (optionName == 'DSEnabled' || optionName == 'DSModeSchool')
     {
-        case 'DSEnabled':
-            scabbards.SetEnabled(modEnabled);
-            scabbards.SetScabbards();
-            UpdateDSMenuOptions(modEnabled, schoolMode);
-            break;
+        modEnabled = inGameConfig.GetVarValue(groupName, 'DSEnabled');
+        schoolMode = (DSSchoolSet)StringToInt(inGameConfig.GetVarValue(groupName, 'DSModeSchool'));
 
-        case 'DSModeSchool':
-            scabbards.SetSchoolMode(schoolMode);
-            scabbards.SetScabbards();
-            UpdateDSMenuOptions(modEnabled, schoolMode);
-            break;
+        UpdateDSMenuOptions(modEnabled, schoolMode);
+    }
 
-        case 'DSModeChestplate':
-            scabbards.SetChestplateMode(inGameConfig.GetVarValue(groupName, 'DSModeChestplate'));
-            scabbards.SetScabbards();
-            break;
+    // the main menu has no player
+    if (GetWitcherPlayer())
+    {
+        thePlayer.GetDynamicScabbards().SetScabbards();
     }
 
     return result;
@@ -591,8 +755,8 @@ function OnOptionValueChanged(groupId : int, optionName : name, optionValue : st
 @wrapMethod(CR4IngameMenu)
 function OnShowOptionSubmenu(actionType : int, menuTag : int, id : string)
 {
-    var result: bool;
-    var inGameConfig: CInGameConfigWrapper;
+    var result : bool;
+    var inGameConfig : CInGameConfigWrapper;
     var modEnabled : bool;
     var schoolMode : DSSchoolSet;
 

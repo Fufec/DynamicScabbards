@@ -2,9 +2,9 @@
 [content]
 name = "modDynamicScabbards"
 description = "Match your swords of any quality with your witcher armor."
-version = "3.0.0"
+version = "4.0.0"
 authors = ["Fufec"]
-game_version = "4.04"
+game_version = "5.0"
 scripts_root = "content/scripts"
 
 # Any dependencies that this project might need
