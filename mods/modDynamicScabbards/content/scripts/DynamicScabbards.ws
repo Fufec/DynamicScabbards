@@ -450,8 +450,8 @@ class DynamicScabbards
         }
     }
 
-    // the inventory preview has an inventory of its own, whose items have no override; a scabbard
-    // it spawns from there comes from the scabbard's own template (seen with Aerondight)
+    // the inventory preview has an inventory of its own, with copies of the player's items and their
+    // overrides; a scabbard copy it creates itself (seen with Aerondight) has none
     function IsScabbard(entity : CItemEntity) : bool
     {
         var category : name;
@@ -496,24 +496,7 @@ class DynamicScabbards
         return '';
     }
 
-    // only the copy from the scabbard's own template is recognized (the entity file is named
-    // after the template): a template that does not match the entity file never remounts anything
-    function IsOwnTemplateCopy(entity : CItemEntity, scabbard : name, appearance : name) : bool
-    {
-        var inv : CInventoryComponent;
-        var own_template : string;
-        var appearance_template : string;
-
-        inv = thePlayer.GetInventory();
-        own_template = StrLower(inv.GetItemTemplateByName(scabbard));
-        appearance_template = StrLower(inv.GetItemTemplateByName(appearance));
-
-        return (own_template != ""                  &&
-                own_template != appearance_template &&
-                StrEndsWith(StrLower(entity.GetReadableName()), own_template + ".w2ent"));
-    }
-
-    // the preview's item gets the override; only that scabbard is remounted
+    // the preview's copy gets the override of the player's scabbard; only that scabbard is remounted
     function SetPreviewOverride(preview : CEntity, entity : CItemEntity, appearance : name)
     {
         var inv : CInventoryComponent;
@@ -528,7 +511,8 @@ class DynamicScabbards
 
         item = inv.GetItemByItemEntity(entity);
 
-        if (!inv.IsIdValid(item))
+        // the copy has it already: it looks right
+        if (!inv.IsIdValid(item) || inv.GetItemTemplateOverride(item) == appearance)
         {
             return;
         }
@@ -548,7 +532,7 @@ class DynamicScabbards
 
         appearance = GetMountedOverride(item_name);
 
-        if (appearance == '' || !IsOwnTemplateCopy(entity, item_name, appearance))
+        if (appearance == '')
         {
             return;
         }
