@@ -3,9 +3,8 @@ set -euo pipefail
 
 comp="${1:-}"
 case "$comp" in
-  core)  mod="modDynamicScabbards";   with_bin=1; zipname="DynamicScabbards.zip" ;;
-  wpiao) mod="mod0_DS_WPIAO_Patch";   with_bin=0; zipname="DynamicScabbardsWearPreviewItemsAsOutfitsPatch.zip" ;;
-  *) echo "usage: ./package.sh <core|wpiao>" >&2; exit 2 ;;
+  core)  mod="modDynamicScabbards"; zipname="DynamicScabbards.zip" ;;
+  *) echo "usage: ./package.sh core" >&2; exit 2 ;;
 esac
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -17,11 +16,7 @@ ver="$(sed -nE 's/^version = "([^"]+)".*/\1/p' "mods/$mod/witcherscript.toml")"
 mkdir -p dist
 rel="dist/$zipname"
 rm -f "$rel"
-if [ "$with_bin" = 1 ]; then
-  zip -qr "$rel" "mods/$mod" bin
-else
-  zip -qr "$rel" "mods/$mod"
-fi
+zip -qr "$rel" "mods/$mod" bin
 
 echo "Built $rel (v$ver)"
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
