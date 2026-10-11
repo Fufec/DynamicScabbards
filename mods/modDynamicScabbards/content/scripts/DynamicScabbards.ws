@@ -15,43 +15,30 @@ enum DSSchoolSet
 class DynamicScabbards
 {
     // the settings are read from the game's config when needed, so they are always the menu's;
-    // without the menu xml (mod.io) the value is "" and the default applies
-    function GetOption(option : name, default_value : string) : string
-    {
-        var value : string;
-
-        value = theGame.GetInGameConfigWrapper().GetVarValue('DSOptions', option);
-
-        if (value == "")
-        {
-            return default_value;
-        }
-
-        return value;
-    }
+    // without the menu xml (mod.io) every value is "", and the comparisons give the defaults
 
     // mod enabled
     public function IsEnabled() : bool
     {
-        return GetOption('DSEnabled', "true") == "true";
+        return theGame.GetInGameConfigWrapper().GetVarValue('DSOptions', 'DSEnabled') != "false";
     }
 
     // if true, only chestplate armor piece will be required for the swap to occur
     function IsChestplateMode() : bool
     {
-        return GetOption('DSModeChestplate', "false") == "true";
+        return theGame.GetInGameConfigWrapper().GetVarValue('DSOptions', 'DSModeChestplate') == "true";
     }
 
-    // DS_Set_Equipped, or a fixed school chosen in the menu
+    // DS_Set_Equipped, or a fixed school chosen in the menu ("" gives 0, DS_Set_Equipped)
     function GetSchoolMode() : DSSchoolSet
     {
-        return (DSSchoolSet)StringToInt(GetOption('DSModeSchool', "0"));
+        return (DSSchoolSet)StringToInt(theGame.GetInGameConfigWrapper().GetVarValue('DSOptions', 'DSModeSchool'));
     }
 
     // armor and swords are read by their transmog appearance
     function PrefersTransmog() : bool
     {
-        return GetOption('DSPreferTransmog', "true") == "true";
+        return theGame.GetInGameConfigWrapper().GetVarValue('DSOptions', 'DSPreferTransmog') != "false";
     }
 
     // the scabbards get a template override (native transmog) pointing at the school scabbard item:
@@ -168,13 +155,9 @@ class DynamicScabbards
         return IsNameValid(thePlayer.GetInventory().GetItemTemplateOverride(item));
     }
 
-    // the engine spawns a new entity only on mount
-    function Remount(item : SItemUniqueId)
+    // the engine spawns a new entity only on mount; the inventory is the player's or the preview's
+    function Remount(inv : CInventoryComponent, item : SItemUniqueId)
     {
-        var inv : CInventoryComponent;
-
-        inv = thePlayer.GetInventory();
-
         if (inv.IsItemMounted(item))
         {
             inv.UnmountItem(item, true);
@@ -194,7 +177,7 @@ class DynamicScabbards
         }
 
         inv.SetItemTemplateOverride(item, scabbard);
-        Remount(item);
+        Remount(inv, item);
     }
 
     function ClearOverride(item : SItemUniqueId)
@@ -209,7 +192,7 @@ class DynamicScabbards
 
     // every sword has its own scabbard item; only the mounted one (of the equipped sword)
     // gets the override, the others are cleared
-    function SetCategoryOverride(category : name, scabbard : name)
+    function SetScabbardAppearance(category : name, scabbard : name)
     {
         var inv : CInventoryComponent;
         var ids : array<SItemUniqueId>;
@@ -231,7 +214,7 @@ class DynamicScabbards
         }
     }
 
-    function ClearCategoryOverride(category : name)
+    function ClearScabbardAppearances(category : name)
     {
         var ids : array<SItemUniqueId>;
         var i : int;
@@ -244,46 +227,58 @@ class DynamicScabbards
         }
     }
 
-    function UpdateSteelScabbard(school : DSSchoolSet)
+    // the equipped steel sword fits the school scabbard: equipped, usable and not excluded
+    function SteelSwordFitsScabbard() : bool
     {
         var inv : CInventoryComponent;
         var sword_steel : SItemUniqueId;
 
         inv = thePlayer.GetInventory();
 
-        if (!inv.GetItemEquippedOnSlot(EES_SteelSword, sword_steel) ||
-            !inv.IsItemSteelSwordUsableByPlayer(sword_steel)        ||
-            IsExcludedSteelSword(GetVisibleName(sword_steel)))
-        {
-            ClearCategoryOverride(SteelCategory());
-            return;
-        }
-
-        SetCategoryOverride(SteelCategory(), GetSteelScabbard(school));
+        return (inv.GetItemEquippedOnSlot(EES_SteelSword, sword_steel) &&
+                inv.IsItemSteelSwordUsableByPlayer(sword_steel)        &&
+                !IsExcludedSteelSword(GetVisibleItemName(sword_steel)));
     }
 
-    function UpdateSilverScabbard(school : DSSchoolSet)
+    // the equipped silver sword fits the school scabbard: equipped, usable and not excluded
+    function SilverSwordFitsScabbard() : bool
     {
         var inv : CInventoryComponent;
         var sword_silver : SItemUniqueId;
 
         inv = thePlayer.GetInventory();
 
-        if (!inv.GetItemEquippedOnSlot(EES_SilverSword, sword_silver) ||
-            !inv.IsItemSilverSwordUsableByPlayer(sword_silver)        ||
-            IsExcludedSilverSword(GetVisibleName(sword_silver)))
+        return (inv.GetItemEquippedOnSlot(EES_SilverSword, sword_silver) &&
+                inv.IsItemSilverSwordUsableByPlayer(sword_silver)        &&
+                !IsExcludedSilverSword(GetVisibleItemName(sword_silver)));
+    }
+
+    function UpdateSteelScabbard(school : DSSchoolSet)
+    {
+        if (!SteelSwordFitsScabbard())
         {
-            ClearCategoryOverride(SilverCategory());
+            ClearScabbardAppearances(SteelCategory());
             return;
         }
 
-        SetCategoryOverride(SilverCategory(), GetSilverScabbard(school));
+        SetScabbardAppearance(SteelCategory(), GetSteelScabbard(school));
+    }
+
+    function UpdateSilverScabbard(school : DSSchoolSet)
+    {
+        if (!SilverSwordFitsScabbard())
+        {
+            ClearScabbardAppearances(SilverCategory());
+            return;
+        }
+
+        SetScabbardAppearance(SilverCategory(), GetSilverScabbard(school));
     }
 
     function RestoreVanillaScabbards()
     {
-        ClearCategoryOverride(SteelCategory());
-        ClearCategoryOverride(SilverCategory());
+        ClearScabbardAppearances(SteelCategory());
+        ClearScabbardAppearances(SilverCategory());
     }
 
     // set detection: every piece has the school in its name
@@ -316,7 +311,7 @@ class DynamicScabbards
     }
 
     // the item the transmog shows, if that setting is on
-    function GetVisibleName(item : SItemUniqueId) : name
+    function GetVisibleItemName(item : SItemUniqueId) : name
     {
         var inv : CInventoryComponent;
         var appearance : name;
@@ -332,7 +327,8 @@ class DynamicScabbards
         return inv.GetItemName(item);
     }
 
-    function GetVisibleItemName(slot : EEquipmentSlots, out item_name : name) : bool
+    // the item equipped on the slot, by GetVisibleItemName; false for an empty slot
+    function GetVisibleItemNameOnSlot(slot : EEquipmentSlots, out item_name : name) : bool
     {
         var inv : CInventoryComponent;
         var item : SItemUniqueId;
@@ -344,7 +340,7 @@ class DynamicScabbards
             return false;
         }
 
-        item_name = GetVisibleName(item);
+        item_name = GetVisibleItemName(item);
         return true;
     }
 
@@ -367,7 +363,7 @@ class DynamicScabbards
         if (IsChestplateMode())
         {
             // only read chestplate armor piece, it stands for every piece
-            if (GetVisibleItemName(EES_Armor, armor))
+            if (GetVisibleItemNameOnSlot(EES_Armor, armor))
             {
                 return GetSchoolFromArmor(armor, armor, armor, armor, school);
             }
@@ -375,10 +371,10 @@ class DynamicScabbards
         else
         {
             // all pieces must be equipped
-            if (GetVisibleItemName(EES_Armor, armor)   &&
-                GetVisibleItemName(EES_Gloves, gloves) &&
-                GetVisibleItemName(EES_Pants, pants)   &&
-                GetVisibleItemName(EES_Boots, boots))
+            if (GetVisibleItemNameOnSlot(EES_Armor, armor)   &&
+                GetVisibleItemNameOnSlot(EES_Gloves, gloves) &&
+                GetVisibleItemNameOnSlot(EES_Pants, pants)   &&
+                GetVisibleItemNameOnSlot(EES_Boots, boots))
             {
                 return GetSchoolFromArmor(armor, gloves, pants, boots, school);
             }
@@ -479,12 +475,6 @@ class DynamicScabbards
         return actor && !player && !npc && theGame.GetGuiManager().IsAnyMenu();
     }
 
-    // the template the entity file of an item is named after
-    function GetTemplate(item_name : name) : string
-    {
-        return StrLower(thePlayer.GetInventory().GetItemTemplateByName(item_name));
-    }
-
     // the override of the player's mounted scabbard of that name, '' if it has none
     function GetMountedOverride(scabbard : name) : name
     {
@@ -506,16 +496,20 @@ class DynamicScabbards
         return '';
     }
 
-    // only the copy from the scabbard's own template is recognized:
-    // a template that does not match the entity file never remounts anything
+    // only the copy from the scabbard's own template is recognized (the entity file is named
+    // after the template): a template that does not match the entity file never remounts anything
     function IsOwnTemplateCopy(entity : CItemEntity, scabbard : name, appearance : name) : bool
     {
+        var inv : CInventoryComponent;
         var own_template : string;
+        var appearance_template : string;
 
-        own_template = GetTemplate(scabbard);
+        inv = thePlayer.GetInventory();
+        own_template = StrLower(inv.GetItemTemplateByName(scabbard));
+        appearance_template = StrLower(inv.GetItemTemplateByName(appearance));
 
-        return (own_template != ""                      &&
-                own_template != GetTemplate(appearance) &&
+        return (own_template != ""                  &&
+                own_template != appearance_template &&
                 StrEndsWith(StrLower(entity.GetReadableName()), own_template + ".w2ent"));
     }
 
@@ -540,8 +534,7 @@ class DynamicScabbards
         }
 
         inv.SetItemTemplateOverride(item, appearance);
-        inv.UnmountItem(item, true);
-        inv.MountItem(item);
+        Remount(inv, item);
     }
 
     public function OnItemAttached(entity : CItemEntity, parent_entity : CEntity, item_name : name)
