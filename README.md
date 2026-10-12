@@ -25,14 +25,6 @@ From then on the engine spawns the school scabbard itself on every mount: draws,
 loads, scenes, fast travel. Only the mounted scabbard has the override; the
 scabbards of the other swords are cleared. The override is saved with the item.
 
-Mods that read the mounted scabbard entity see the school scabbard, as with 3.0
-(not yet tested with their Remastered versions). The Wear Preview Items As
-Outfits patch is not needed anymore: the native transmog takes its place.
-
-The inventory preview keeps its own copies of the items, with their overrides.
-A scabbard copy it creates itself (seen with Aerondight) has none, and gets the
-override of Geralt's scabbard.
-
 ## Settings
 
 Options > Mods > Dynamic Scabbards:
